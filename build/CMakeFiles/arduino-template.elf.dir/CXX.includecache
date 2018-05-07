@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../../../libraries/hwlib/library/hwlib.hpp
+
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/libc-stub.cpp
+
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/main.cpp
+wrap-hwlib.hpp
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/wrap-hwlib.hpp
+
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/wrap-hwlib.cpp
+wrap-hwlib.hpp
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/wrap-hwlib.hpp
+
+C:/ti-software/R2D2/Build-environment/modules/MAPPING/src/wrap-hwlib.hpp
+hwlib.hpp
+-
+
