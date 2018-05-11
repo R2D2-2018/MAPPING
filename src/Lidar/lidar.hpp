@@ -7,7 +7,7 @@
 
 #ifndef LIDAR_HPP
 #define LIDAR_HPP
-#include "wrap-hwlib.hpp"
+#include "../wrap-hwlib.hpp"
 #include "lidar_data.hpp"
 #include <array>
 
