@@ -28,4 +28,6 @@ set (sources
     src/wrap-hwlib.cpp
     src/libc-stub.cpp
     src/main.cpp
+    src/Lidar/lidar.cpp
+    src/Lidar/Mock/mock_pin.cpp
 )
