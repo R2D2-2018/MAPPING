@@ -49,19 +49,32 @@ Mapping::LidarData Mapping::Lidar::getLidarData()
 
 bool Mapping::Lidar::check()
 {
-    return true;
+    char checksum = 0;
+    for (int i = 0; i < 6; ++i)
+    {
+        checksum += bytes[i];
+    }
+    ///< Byte 1&2 are both 59 (startbit)
+    checksum += 118;
+    return checksum == bytes[6];
 }
 
 
 int Mapping::Lidar::constructDistance()
 {
-    return 1;
+    int distance = bytes[1];
+    distance <<= 8;
+    distance += bytes[0];
+    return distance;
 }
 
 
 int Mapping::Lidar::constructSignalStrength()
 {
-    return 1;
+    int strength = bytes[3];
+    strength <<= 8;
+    strength += bytes[2];
+    return strength;
 }
 
 

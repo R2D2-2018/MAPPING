@@ -17,4 +17,4 @@ namespace Mapping
     };
 }
 
-#endif
+#endif // LIDAR_DATA_HPP

@@ -27,8 +27,9 @@ namespace Mapping
          * 
          * This function reads the arduino pin
          * after sleeping some time, to ensure that the
-         * readings do not happen more frequent than the
-         * actual baud rate of the sensor.
+         * frequency of readings matches with the baud 
+         * rate of the sensor.
+         * WAIT IS NOT IMPLEMENTED YET!
          * 
          * @return The value of the pin 1 - on, 0 - off
          */
