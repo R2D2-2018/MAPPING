@@ -29,20 +29,16 @@ char Mapping::Lidar::getByte()
 Mapping::LidarData Mapping::Lidar::getLidarData()
 {
     Mapping::LidarData data;
-    waitForStart();
-    for (int i = 0; i < 7; ++i)
-    {
-        bytes[i] = getByte();
+    do{
+        waitForStart();
+        for (int i = 0; i < 7; ++i)
+        {
+            bytes[i] = getByte();
+        }
     }
-    if (check())
-    {
-        data.distance = constructDistance();
-        data.signalStrength = constructSignalStrength();
-    }
-    else
-    {
-        //exception
-    }
+    while(!check());
+    data.distance = constructDistance();
+    data.signalStrength = constructSignalStrength();
     return data;
 }
 
@@ -97,4 +93,5 @@ void Mapping::Lidar::waitForStart()
             }
         }
     }
+    //exception
 }
