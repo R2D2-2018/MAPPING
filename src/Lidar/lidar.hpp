@@ -19,6 +19,7 @@ namespace Mapping
     private:
         hwlib::target::pin_in& pin;
         int numberOfTries;
+        ///< This array contains the 3th - 9th bytes of the message (1 and 2 are startbits)
         std::array<char, 7> bytes;
 
           /**
@@ -89,7 +90,7 @@ namespace Mapping
         int constructSignalStrength();
 
     public:
-        Lidar(hwlib::target::pin_in& pin, int numberOfTries);
+        Lidar(hwlib::target::pin_in& pin, int numberOfTries=1000);
 
         LidarData getLidarData();
     };

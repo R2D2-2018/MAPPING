@@ -1,7 +1,7 @@
 #include "lidar.hpp"
 
 
-Mapping::Lidar::Lidar(hwlib::target::pin_in& pin, int numberOfTries = 1000):
+Mapping::Lidar::Lidar(hwlib::target::pin_in& pin, int numberOfTries):
     pin(pin),
     numberOfTries(numberOfTries)
 {}
@@ -10,7 +10,7 @@ Mapping::Lidar::Lidar(hwlib::target::pin_in& pin, int numberOfTries = 1000):
 bool Mapping::Lidar::getPin()
 {
     //wait
-    return !pin.get();
+    return pin.get();
 }
 
 
@@ -19,7 +19,7 @@ char Mapping::Lidar::getByte()
     char result = 0;
     for (int i = 0; i < 8; ++i)
     {
-        result *= 10;
+        result *= 2;
         result += getPin();
     }
     return result;
@@ -85,7 +85,7 @@ void Mapping::Lidar::waitForStart()
         {
             for (int i = 0; i < 8; ++i)
             {
-                getPin();
+                buffer = buffer | getPin();
             }
             if (buffer == 59)
             {

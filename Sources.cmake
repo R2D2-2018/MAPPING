@@ -29,4 +29,5 @@ set (sources
     src/libc-stub.cpp
     src/main.cpp
     src/Lidar/lidar.cpp
+    src/Lidar/Mock/mock_pin.cpp
 )
