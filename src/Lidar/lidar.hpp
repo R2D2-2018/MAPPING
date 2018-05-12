@@ -92,6 +92,16 @@ namespace Mapping
     public:
         Lidar(hwlib::target::pin_in& pin, int numberOfTries=1000);
 
+
+        /**
+         * @brief This function returns sensor data.
+         * 
+         * This function returns a LiderData struct,
+         * containing distance and signalStrength
+         * information.
+         * 
+         * @return sensor data
+         */
         LidarData getLidarData();
     };
 }
