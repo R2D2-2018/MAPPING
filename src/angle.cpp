@@ -34,5 +34,5 @@ double Mapping::Angle::asDegree()
 
 double Mapping::Angle::asRadian()
 {
-	return angleInDeg / (180 / 3.14159265358979323846);
+	return angleInDeg / (180 / pi);
 }
