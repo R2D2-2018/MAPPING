@@ -18,9 +18,9 @@ namespace Mapping
          * in 2D space. X and y are the coordinates.
          * 
          */
-	struct Vector2d
+	struct Vector2D
 	{
-		Vector2d(int x, int y) :
+		Vector2D(int x, int y) :
 			x(x),
 			y(y)
 		{}
@@ -50,11 +50,11 @@ namespace Mapping
          * This operator adds up two vectors, without
          * modifying them.
          * 
-         * @return [Vector2d] - New sum vector.
+         * @return [Vector2D] - New sum vector.
          */
-		Vector2d operator+(const Vector2d& other) const
+		Vector2D operator+(const Vector2D& other) const
 		{
-			return Vector2d(x + other.x, y + other.y);
+			return Vector2D(x + other.x, y + other.y);
 		}
 
 
@@ -64,10 +64,10 @@ namespace Mapping
          * This operator adds a vector to a vector
          * that the function is being called on.
          * 
-         * @return [Vector2d] - The vector on which 
+         * @return [Vector2D] - The vector on which 
          * the function has been called - the sum vector.
          */
-        Vector2d& operator+=(const Vector2d& other)
+        Vector2D& operator+=(const Vector2D& other)
         {
             x += other.x;
             y += other.y;
@@ -81,11 +81,11 @@ namespace Mapping
          * This operator substracts vectors, without
          * modifying them.
          * 
-         * @return [Vector2d] - New difference vector.
+         * @return [Vector2D] - New difference vector.
          */
-		Vector2d operator-(const Vector2d& other) const
+		Vector2D operator-(const Vector2D& other) const
 		{
-			return Vector2d(x - other.x, y - other.y);
+			return Vector2D(x - other.x, y - other.y);
 		}
 
 
@@ -95,10 +95,10 @@ namespace Mapping
          * This operator substracts a vector from
          * the vector that the function is being called on.
          * 
-         * @return [Vector2d] - The vector on which 
+         * @return [Vector2D] - The vector on which 
          * the function has been called - the difference vector.
          */
-        Vector2d& operator-=(const Vector2d& other)
+        Vector2D& operator-=(const Vector2D& other)
         {
             x -= other.x;
             y -= other.y;
@@ -110,12 +110,12 @@ namespace Mapping
          * @brief This operator multiplies the
          * vector with a scalar value.
          * 
-         * @return [Vector2d] - The vector on which 
+         * @return [Vector2D] - The vector on which 
          * the function has been called - multiplied vector.
          */
-        Vector2d operator*(const int& multiplier) const
+        Vector2D operator*(const int& multiplier) const
         {
-            return Vector2d(x * multiplier, y * multiplier);
+            return Vector2D(x * multiplier, y * multiplier);
         }
 
 
@@ -123,9 +123,9 @@ namespace Mapping
          * @brief This operator multiplies the
          * vector with a scalar value.
          * 
-         * @return [Vector2d] - Multiplied vector.
+         * @return [Vector2D] - Multiplied vector.
          */
-		Vector2d& operator*=(const int& multiplier)
+		Vector2D& operator*=(const int& multiplier)
 		{
 			x *= multiplier;
 			y *= multiplier;

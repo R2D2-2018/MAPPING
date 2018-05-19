@@ -42,12 +42,12 @@ namespace Mapping
 	 *        0
 	 */
 	template<int X, int Y>
-	class Map2d
+	class Map2D
 	{
 	private:
         double scale;
 		std::array<std::array<bool, X>, Y> grid;
-		Vector2d sensorPosition;
+		Vector2D sensorPosition;
 	public:
 		 /**
          * @brief ctor
@@ -66,7 +66,7 @@ namespace Mapping
 		 * 
 		 * @param [double] scale - 1 grid distance = scale * 1 cm
          */
-		Map2d(Vector2d sensorPosition, double scale):
+		Map2D(Vector2D sensorPosition, double scale):
             scale(scale),
 			sensorPosition(sensorPosition)
 		{
@@ -100,10 +100,10 @@ namespace Mapping
 		 * If you wish to move the sensor with a delta instead,
 		 * use moveSensorCm()
 		 * 
-		 * @param [Vector2d] - The new absolute position of the
+		 * @param [Vector2D] - The new absolute position of the
 		 * sensor.
          */
-		void setSensorPosition(Vector2d newPosition)
+		void setSensorPosition(Vector2D newPosition)
 		{
 			sensorPosition = newPosition;
 		}
@@ -113,10 +113,10 @@ namespace Mapping
 		/**
          * @brief Returns the current position of the sensor.
 		 * 
-		 * @return [Vector2d] - The current position of the
+		 * @return [Vector2D] - The current position of the
 		 * sensor.
          */
-        Vector2d getSensorPosition()
+        Vector2D getSensorPosition()
         {
             return sensorPosition;
         }
@@ -125,13 +125,13 @@ namespace Mapping
 		/**
          * @brief Moves the sensor with the given delta.
 		 * 
-		 * @param [Vector2d] delta - The change in position
+		 * @param [Vector2D] delta - The change in position
 		 * of the sensor.
 		 * NOTE: This value is given in cm, not in grid points!
          */
-		void moveSensorCm(Vector2d delta)
+		void moveSensorCm(Vector2D delta)
 		{
-			auto gridVector = Vector2d(round(delta.x / scale), round(delta.y / scale));
+			auto gridVector = Vector2D(round(delta.x / scale), round(delta.y / scale));
             sensorPosition += gridVector;
 		}
 
@@ -154,7 +154,7 @@ namespace Mapping
 			//< However, if we do something like auto a = sin(distance), then it works
 			//< perfectly fine. This should be fixed somehow.
 
-            //moveSensorCm(Vector2d(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+            //moveSensorCm(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
         }
 
 
@@ -164,12 +164,12 @@ namespace Mapping
 		 * This function sets the given relative point as
 		 * impassable.
 		 * 
-		 * @param [Vector2d] point - The to the seensor relative point
+		 * @param [Vector2D] point - The to the seensor relative point
 		 * to be set.
 		 *
 		 * NOTE: This value is given in cm, not in grid points!
          */
-        void setRelativePointAsImpassable(const Vector2d& point)
+        void setRelativePointAsImpassable(const Vector2D& point)
         {
 			///< This should be in a try, but the compiler won't let
 			///< me do that.
@@ -197,7 +197,7 @@ namespace Mapping
 			///< However, if we do something like auto a = sin(distance), then it works
 			///< perfectly fine. This should be fixed somehow.
 
-            //setRelativePointAsImpassable(Vector2d(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));   
+            //setRelativePointAsImpassable(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));   
         }
 
 

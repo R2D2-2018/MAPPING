@@ -4,10 +4,10 @@
 #include "../src/map2d.hpp"
 #include "../src/angle.hpp"
 
-TEST_CASE("Vector2d", "[Vector2d]")
+TEST_CASE("Vector2D", "[Vector2D]")
 {
-    Mapping::Vector2d vec1(3, 4);
-    Mapping::Vector2d vec2(2, 2);
+    Mapping::Vector2D vec1(3, 4);
+    Mapping::Vector2D vec2(2, 2);
 
     auto vec3 = vec1 + vec2;
 
@@ -17,16 +17,16 @@ TEST_CASE("Vector2d", "[Vector2d]")
 }
 
 
-TEST_CASE("Map2d", "[Map2d]")
+TEST_CASE("Map2D", "[Map2D]")
 {
-    Mapping::Map2d<10, 10> map(Mapping::Vector2d(5, 5), 3);
+    Mapping::Map2D<10, 10> map(Mapping::Vector2D(5, 5), 3);
 
     //Set sensor pos to [3, 2];
-    map.moveSensorCm(Mapping::Vector2d(-6, -9));
+    map.moveSensorCm(Mapping::Vector2D(-6, -9));
     REQUIRE(map.getSensorPosition().x == 3);
     REQUIRE(map.getSensorPosition().y == 2);
 
     //Set [4, 3] as impassable
-    map.setRelativePointAsImpassable(Mapping::Vector2d(3, 3));
+    map.setRelativePointAsImpassable(Mapping::Vector2D(3, 3));
     REQUIRE(map.getGrid()[4][3] == true);
 }
