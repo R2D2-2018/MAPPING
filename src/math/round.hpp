@@ -1,9 +1,19 @@
 #ifndef ROUND_HPP
 #define ROUND_HPP
 
-namespace math
-{
-    int round(double number);
-}
+/**
+ * @file
+ * @brief     round function
+ * @author    Bendeguz Toth
+ * @license   See LICENSE
+ */
+
+namespace math {
+/**
+ * @brief This function rounds a given floating point number
+ * to an integer.
+ */
+int round(double number);
+} // namespace math
 
 #endif
