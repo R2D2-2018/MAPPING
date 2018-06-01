@@ -44,8 +44,33 @@ template <int X, int Y>
 class Map2D {
   private:
     double scale;
+    Angle sensor_angle;
     std::array<std::array<bool, X>, Y> grid;
     Vector2D sensorPosition;
+
+
+    /**
+     * @brief Sets the point as impassable.
+     *
+     * This function sets the given relative point as
+     * impassable.
+     *
+     * @param [in] angle: The angle in which in the direction
+     * of the to bet set point. Angle 0 is pointing downwards, and
+     * grows counterclockwise.
+     *
+     *  @param [in] distance: The distance of the point to the
+     *
+     * NOTE: This value is given in cm, not in grid points!
+     */
+    void setRelativePointAsImpassable(Angle angle, double distance) {
+        ///< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
+        ///< However, if we do something like auto a = sin(distance), then it works
+        ///< perfectly fine. This should be fixed somehow.
+
+        // auto absoluteVector = Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance));
+        // grid.at(sensorPosition.x + (absoluteVector.x / scale)).at(sensorPosition.y + (absoluteVector.y / scale)) = true;
+    }
 
   public:
     /**
@@ -65,7 +90,11 @@ class Map2D {
      *
      * @param [in] scale: 1 grid distance = scale * 1 cm
      */
-    Map2D(Vector2D sensorPosition, double scale) : scale(scale), sensorPosition(sensorPosition) {
+    Map2D(Vector2D sensorPosition, Angle sensor_angle, double scale) : 
+    scale(scale),
+    sensor_angle(sensor_angle),
+    sensorPosition(sensorPosition)
+    {
         clear();
     }
 
@@ -110,16 +139,9 @@ class Map2D {
         return sensorPosition;
     }
 
-    /**
-     * @brief Moves the sensor with the given delta.
-     *
-     * @param [in] delta: The change in position
-     * of the sensor.
-     * NOTE: This value is given in cm, not in grid points!
-     */
-    void moveSensorCm(Vector2D delta) {
-        auto gridVector = Vector2D(round(delta.x / scale), round(delta.y / scale));
-        sensorPosition += gridVector;
+    Angle::getSensorRotation()
+    {
+        return sensor_angle;
     }
 
     /**
@@ -133,51 +155,39 @@ class Map2D {
      * of the sensor in centimeters.
      * NOTE: This value is given in cm, not in grid points!
      */
-    void moveSensorCm(Angle angle, double distance) {
+    void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
         //< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
         //< However, if we do something like auto a = sin(distance), then it works
         //< perfectly fine. This should be fixed somehow.
 
-        // moveSensorCm(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+        // auto absolutVector = Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+        // sensorPosition += Vector2D(round(absolutVector.x / scale), round(absolutVector.y / scale));
+        if (setRotation)
+        {
+            sensor_angle = angle;
+        }
     }
 
-    /**
-     * @brief Sets the point as impassable.
-     *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] point: The to the seensor relative point
-     * to be set.
-     *
-     * NOTE: This value is given in cm, not in grid points!
-     */
-    void setRelativePointAsImpassable(const Vector2D &point) {
-        ///< This should be in a try, but the compiler won't let
-        ///< me do that.
-        grid.at(sensorPosition.x + (point.x / scale)).at(sensorPosition.y + (point.y / scale)) = true;
+    void rotateSensor(Angle delta)
+    {
+        sensor_angle += delta;
     }
 
-    /**
-     * @brief Sets the point as impassable.
-     *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] angle: The angle in which in the direction
-     * of the to bet set point. Angle 0 is pointing downwards, and
-     * grows counterclockwise.
-     *
-     *  @param [in] distance: The distance of the point to the
-     *
-     * NOTE: This value is given in cm, not in grid points!
-     */
-    void setRelativePointAsImpassable(Angle angle, double distance) {
-        ///< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        ///< However, if we do something like auto a = sin(distance), then it works
-        ///< perfectly fine. This should be fixed somehow.
 
-        // setRelativePointAsImpassable(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+    void setSensorRotation(Angle angle)
+    {
+        sensor_angle = angle;
+    }
+
+    void mapLocation()
+    {
+        ///< The servo motor will be called here. Waitnig for team motor controller
+        for (int i = 0; i < 360; ++i)
+        {
+            ///< servo.write(i)
+            ///< auto measured_distance = lidar.read();
+            ///< setRelativePointasImpassable(Angle(AngleType::DEG, i + sensor_angle.asRadian()))
+        }
     }
 
     /**
