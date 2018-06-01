@@ -44,10 +44,9 @@ template <int X, int Y>
 class Map2D {
   private:
     double scale;
-    Angle sensor_angle;
+    Angle sensorAngle;
     std::array<std::array<bool, X>, Y> grid;
     Vector2D sensorPosition;
-
 
     /**
      * @brief Sets the point as impassable.
@@ -90,11 +89,8 @@ class Map2D {
      *
      * @param [in] scale: 1 grid distance = scale * 1 cm
      */
-    Map2D(Vector2D sensorPosition, Angle sensor_angle, double scale) : 
-    scale(scale),
-    sensor_angle(sensor_angle),
-    sensorPosition(sensorPosition)
-    {
+    Map2D(Vector2D sensorPosition, Angle sensorAngle, double scale)
+        : scale(scale), sensorAngle(sensorAngle), sensorPosition(sensorPosition) {
         clear();
     }
 
@@ -139,9 +135,8 @@ class Map2D {
         return sensorPosition;
     }
 
-    Angle::getSensorRotation()
-    {
-        return sensor_angle;
+    Angle::getSensorRotation() {
+        return sensoAngle;
     }
 
     /**
@@ -154,39 +149,56 @@ class Map2D {
      * @param [in] distance: The distance delta
      * of the sensor in centimeters.
      * NOTE: This value is given in cm, not in grid points!
+     *
+     * @param [in] setRotation: If true, de angle will be set
+     * as the angle of the sensor.
      */
     void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
-        //< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        //< However, if we do something like auto a = sin(distance), then it works
-        //< perfectly fine. This should be fixed somehow.
-
         // auto absolutVector = Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
         // sensorPosition += Vector2D(round(absolutVector.x / scale), round(absolutVector.y / scale));
-        if (setRotation)
-        {
-            sensor_angle = angle;
+        if (setRotation) {
+            sensorAngle = angle;
         }
     }
 
-    void rotateSensor(Angle delta)
-    {
-        sensor_angle += delta;
+    /**
+     * @brief This function rotates the sensor with
+     * the given angle.
+     *
+     * @param [in] delta: The change in rotation.
+     */
+    void rotateSensor(Angle delta) {
+        sensorAngle += delta;
     }
-
-
-    void setSensorRotation(Angle angle)
-    {
+    /**
+     * @brief This function sets the rotation of the sensor
+     * to the given (absolute) value.
+     *
+     * @param [in] angle: The absolut angle of the sensor.
+     */
+    void setSensorRotation(Angle angle) {
         sensor_angle = angle;
     }
 
-    void mapLocation()
-    {
+    /**
+     * @brief This function maps the location in
+     * 360 degrees, and fills the detected points in.
+     * This method uses the servo motor controller to set
+     * specified angles of the lidar sensor. This will be
+     * delivered by the module motor controller.
+     *
+     * The driver to the lidar sensor that allows us to
+     * read the measured distance, will be developed by
+     * the team that is responsible for distance measurement.
+     */
+    void mapLocation() {
         ///< The servo motor will be called here. Waitnig for team motor controller
-        for (int i = 0; i < 360; ++i)
-        {
+        for (int i = 0; i < 360; ++i) {
             ///< servo.write(i)
-            ///< auto measured_distance = lidar.read();
-            ///< setRelativePointasImpassable(Angle(AngleType::DEG, i + sensor_angle.asRadian()))
+            ///< auto measuredDistance = lidar.read();
+            ///< if (measuredDistance < MAX_VALUE_OF_SENSOR){
+            ///<    setRelativePointasImpassable(Angle(AngleType::DEG, i + sensorAngle.asRadian()), measuredDistance)
+            ///<}
         }
     }
 
