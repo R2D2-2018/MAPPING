@@ -10,6 +10,7 @@
 
 #include "angle.hpp"
 #include "math/math.hpp"
+#include "math/round.hpp"
 #include "vector2d.hpp"
 #include <array>
 
