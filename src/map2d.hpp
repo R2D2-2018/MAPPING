@@ -9,9 +9,10 @@
 #define MAP2D_HPP
 
 #include "angle.hpp"
+#include "math/math.hpp"
+#include "math/round.hpp"
 #include "vector2d.hpp"
 #include <array>
-#include <math.h>
 
 namespace Mapping {
 /**
@@ -63,12 +64,9 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void setRelativePointAsImpassable(Angle angle, double distance) {
-        ///< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        ///< However, if we do something like auto a = sin(distance), then it works
-        ///< perfectly fine. This should be fixed somehow.
-
-        // auto absoluteVector = Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance));
-        // grid.at(sensorPosition.x + (absoluteVector.x / scale)).at(sensorPosition.y + (absoluteVector.y / scale)) = true;
+        auto absoluteVector =
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
+        grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
   public:
@@ -128,13 +126,16 @@ class Map2D {
     /**
      * @brief Returns the current position of the sensor.
      *
-     * @return [Vector2D] - The current position of the
+     * @return [out] - The current position of the
      * sensor.
      */
     Vector2D getSensorPosition() {
         return sensorPosition;
     }
 
+    /**
+     * @brief Returns the current rotation of the sensor.
+     */
     Angle getSensorRotation() {
         return sensorAngle;
     }
@@ -154,8 +155,9 @@ class Map2D {
      * as the angle of the sensor.
      */
     void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
-        // auto absolutVector = Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
-        // sensorPosition += Vector2D(round(absolutVector.x / scale), round(absolutVector.y / scale));
+        auto absolutVector =
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
+        sensorPosition += Vector2D(math::round(absolutVector.x / scale), math::round(absolutVector.y / scale));
         if (setRotation) {
             sensorAngle = angle;
         }
