@@ -29,4 +29,6 @@ set (sources
     src/libc-stub.cpp
     src/main.cpp
     src/angle.cpp
+    src/math/math.cpp
+    src/math/round.cpp
 )

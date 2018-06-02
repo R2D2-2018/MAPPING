@@ -9,9 +9,10 @@
 #define MAP2D_HPP
 
 #include "angle.hpp"
+#include "math/math.hpp"
+#include "math/round.hpp"
 #include "vector2d.hpp"
 #include <array>
-#include <math.h>
 
 namespace Mapping {
 /**
@@ -118,7 +119,7 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void moveSensorCm(Vector2D delta) {
-        auto gridVector = Vector2D(round(delta.x / scale), round(delta.y / scale));
+        auto gridVector = Vector2D(math::round(delta.x / scale), math::round(delta.y / scale));
         sensorPosition += gridVector;
     }
 
@@ -134,11 +135,9 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void moveSensorCm(Angle angle, double distance) {
-        //< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        //< However, if we do something like auto a = sin(distance), then it works
-        //< perfectly fine. This should be fixed somehow.
-
-        // moveSensorCm(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+        moveSensorCm(
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance),
+            math::round(math::cos(angle.asRadian()) * distance)));
     }
 
     /**
@@ -153,9 +152,7 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void setRelativePointAsImpassable(const Vector2D &point) {
-        ///< This should be in a try, but the compiler won't let
-        ///< me do that.
-        grid.at(sensorPosition.x + (point.x / scale)).at(sensorPosition.y + (point.y / scale)) = true;
+        grid[(sensorPosition.x + (point.x / scale))][(sensorPosition.y + (point.y / scale))] = true;
     }
 
     /**
@@ -173,11 +170,8 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void setRelativePointAsImpassable(Angle angle, double distance) {
-        ///< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        ///< However, if we do something like auto a = sin(distance), then it works
-        ///< perfectly fine. This should be fixed somehow.
-
-        // setRelativePointAsImpassable(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+        setRelativePointAsImpassable(
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance)));
     }
 
     /**
