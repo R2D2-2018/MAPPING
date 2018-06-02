@@ -135,8 +135,8 @@ class Map2D {
         return sensorPosition;
     }
 
-    Angle::getSensorRotation() {
-        return sensoAngle;
+    Angle getSensorRotation() {
+        return sensorAngle;
     }
 
     /**
@@ -177,7 +177,7 @@ class Map2D {
      * @param [in] angle: The absolut angle of the sensor.
      */
     void setSensorRotation(Angle angle) {
-        sensor_angle = angle;
+        sensorAngle = angle;
     }
 
     /**
