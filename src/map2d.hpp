@@ -152,7 +152,7 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void setRelativePointAsImpassable(const Vector2D &point) {
-        grid.at(sensorPosition.x + (point.x / scale)).at(sensorPosition.y + (point.y / scale)) = true;
+        grid[(sensorPosition.x + (point.x / scale))][(sensorPosition.y + (point.y / scale))] = true;
     }
 
     /**
