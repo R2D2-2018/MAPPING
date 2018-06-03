@@ -78,6 +78,34 @@ class Angle {
      * The value will be between 0 - 2pi.
      */
     double asRadian();
+
+    /**
+     *
+     * @brief += operator for angle.
+     *
+     */
+    Angle &operator+=(const Angle &other);
+
+    /**
+     *
+     * @brief + operator for angle.
+     *
+     */
+    Angle operator+(const Angle &other);
+
+    /**
+     *
+     * @brief -= operator for angle.
+     *
+     */
+    Angle &operator-=(const Angle &other);
+
+    /**
+     *
+     * @brief - operator for angle.
+     *
+     */
+    Angle operator-(const Angle &other);
 };
 } // namespace Mapping
 
