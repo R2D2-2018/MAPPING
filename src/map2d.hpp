@@ -45,8 +45,29 @@ template <int X, int Y>
 class Map2D {
   private:
     double scale;
+    Angle sensorAngle;
     std::array<std::array<bool, X>, Y> grid;
     Vector2D sensorPosition;
+
+    /**
+     * @brief Sets the point as impassable.
+     *
+     * This function sets the given relative point as
+     * impassable.
+     *
+     * @param [in] angle: The angle in which in the direction
+     * of the to bet set point. Angle 0 is pointing downwards, and
+     * grows counterclockwise.
+     *
+     *  @param [in] distance: The distance of the point to the
+     *
+     * NOTE: This value is given in cm, not in grid points!
+     */
+    void setRelativePointAsImpassable(Angle angle, double distance) {
+        auto absoluteVector =
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
+        grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
+    }
 
   public:
     /**
@@ -66,7 +87,8 @@ class Map2D {
      *
      * @param [in] scale: 1 grid distance = scale * 1 cm
      */
-    Map2D(Vector2D sensorPosition, double scale) : scale(scale), sensorPosition(sensorPosition) {
+    Map2D(Vector2D sensorPosition, Angle sensorAngle, double scale)
+        : scale(scale), sensorAngle(sensorAngle), sensorPosition(sensorPosition) {
         clear();
     }
 
@@ -104,7 +126,7 @@ class Map2D {
     /**
      * @brief Returns the current position of the sensor.
      *
-     * @return [Vector2D] - The current position of the
+     * @return [out] - The current position of the
      * sensor.
      */
     Vector2D getSensorPosition() {
@@ -112,15 +134,10 @@ class Map2D {
     }
 
     /**
-     * @brief Moves the sensor with the given delta.
-     *
-     * @param [in] delta: The change in position
-     * of the sensor.
-     * NOTE: This value is given in cm, not in grid points!
+     * @brief Returns the current rotation of the sensor.
      */
-    void moveSensorCm(Vector2D delta) {
-        auto gridVector = Vector2D(math::round(delta.x / scale), math::round(delta.y / scale));
-        sensorPosition += gridVector;
+    Angle getSensorRotation() {
+        return sensorAngle;
     }
 
     /**
@@ -133,45 +150,58 @@ class Map2D {
      * @param [in] distance: The distance delta
      * of the sensor in centimeters.
      * NOTE: This value is given in cm, not in grid points!
+     *
+     * @param [in] setRotation: If true, de angle will be set
+     * as the angle of the sensor.
      */
-    void moveSensorCm(Angle angle, double distance) {
-        moveSensorCm(
-            Vector2D(math::round(math::sin(angle.asRadian()) * distance),
-            math::round(math::cos(angle.asRadian()) * distance)));
+    void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
+        auto absolutVector =
+            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
+        sensorPosition += Vector2D(math::round(absolutVector.x / scale), math::round(absolutVector.y / scale));
+        if (setRotation) {
+            sensorAngle = angle;
+        }
     }
 
     /**
-     * @brief Sets the point as impassable.
+     * @brief This function rotates the sensor with
+     * the given angle.
      *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] point: The to the seensor relative point
-     * to be set.
-     *
-     * NOTE: This value is given in cm, not in grid points!
+     * @param [in] delta: The change in rotation.
      */
-    void setRelativePointAsImpassable(const Vector2D &point) {
-        grid[(sensorPosition.x + (point.x / scale))][(sensorPosition.y + (point.y / scale))] = true;
+    void rotateSensor(Angle delta) {
+        sensorAngle += delta;
+    }
+    /**
+     * @brief This function sets the rotation of the sensor
+     * to the given (absolute) value.
+     *
+     * @param [in] angle: The absolut angle of the sensor.
+     */
+    void setSensorRotation(Angle angle) {
+        sensorAngle = angle;
     }
 
     /**
-     * @brief Sets the point as impassable.
+     * @brief This function maps the location in
+     * 360 degrees, and fills the detected points in.
+     * This method uses the servo motor controller to set
+     * specified angles of the lidar sensor. This will be
+     * delivered by the module motor controller.
      *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] angle: The angle in which in the direction
-     * of the to bet set point. Angle 0 is pointing downwards, and
-     * grows counterclockwise.
-     *
-     *  @param [in] distance: The distance of the point to the
-     *
-     * NOTE: This value is given in cm, not in grid points!
+     * The driver to the lidar sensor that allows us to
+     * read the measured distance, will be developed by
+     * the team that is responsible for distance measurement.
      */
-    void setRelativePointAsImpassable(Angle angle, double distance) {
-        setRelativePointAsImpassable(
-            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance)));
+    void mapLocation() {
+        ///< The servo motor will be called here. Waitnig for team motor controller
+        for (int i = 0; i < 360; ++i) {
+            ///< servo.write(i)
+            ///< auto measuredDistance = lidar.read();
+            ///< if (measuredDistance < MAX_VALUE_OF_SENSOR){
+            ///<    setRelativePointasImpassable(Angle(AngleType::DEG, i + sensorAngle.asRadian()), measuredDistance)
+            ///<}
+        }
     }
 
     /**
