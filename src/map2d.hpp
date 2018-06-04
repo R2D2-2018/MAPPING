@@ -8,6 +8,7 @@
 #ifndef MAP2D_HPP
 #define MAP2D_HPP
 
+#include "Pathfinding_mock/graph.hpp"
 #include "angle.hpp"
 #include "math/math.hpp"
 #include "math/round.hpp"
@@ -106,6 +107,22 @@ class Map2D {
      */
     const std::array<std::array<bool, X>, Y> &getGrid() const {
         return grid;
+    }
+
+    /**
+     * @brief Gets the map as a Graph
+     *
+     * This function returns the created map as a
+     * Pathfinding::Graph.
+     * This is a dummy implementation, that returns
+     * an empty graph. The Graph data type is being
+     * currently further developed by the team
+     * responisble for pathfinding.
+     *
+     * @return [out] - the map as a graph
+     */
+    Pathfinding::Graph getGraph() {
+        return Pathfinding::Graph(nullptr, 0, nullptr, 0);
     }
 
     /**
