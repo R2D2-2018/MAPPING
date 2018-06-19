@@ -16,12 +16,6 @@
 #include "wrap-hwlib.hpp"
 #include <array>
 
-// Temporary struct, will be removed in a later version.
-struct ArrayCoordinate {
-    uint8_t x;
-    uint8_t y;
-};
-
 namespace Mapping {
 /**
  * @brief This class represents a 2d map.
@@ -138,12 +132,7 @@ class Map2D {
                                                  {0, 1, 0, 0, 1, 1, 0, 0},
                                                  {0, 0, 0, 0, 1, 0, 0, 0}}};
 
-        // Temporary storage for 2 bool locations.
-        // This is required because the algorithm has to be one step behind at all times.
-        ArrayCoordinate arr[2];
-
-        // Alternates between true and false to select 2 different array elements.
-        bool arr_index = false;
+        uint8_t temp_x, temp_y;
 
         // Currently required to not go out of bounds at first iteration.
         bool first_iter = true;
@@ -155,25 +144,23 @@ class Map2D {
 
                     // If potential node can be removed.
                     if ((grid[x][y - 1] == grid[x][y + 1]) && (grid[x - 1][y] == grid[x + 1][y])) {
-                        arr[arr_index].x = x;
-                        arr[arr_index].y = y;
-
                         if (first_iter) {
                             first_iter = false;
                         } else {
                             // Set the previously detected bool to false.
-                            grid[arr[!arr_index].x][arr[!arr_index].y] = false;
+                            grid[temp_x][temp_y] = false;
                         }
-
-                        // Flip the index to store a new bool location.
-                        arr_index = !arr_index;
+                        temp_x = x;
+                        temp_y = y;
                     }
                 }
             }
         }
 
-        // Set the last bool element detected to false.
-        grid[arr[!arr_index].x][arr[!arr_index].y] = false;
+        if (!first_iter) {
+            // Set the last bool element detected to false.
+            grid[temp_x][temp_y] = false;
+        }
 
         for (uint8_t x = 0; x < 6; ++x) {
             for (uint8_t y = 0; y < 8; ++y) {
