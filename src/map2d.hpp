@@ -13,7 +13,14 @@
 #include "math/math.hpp"
 #include "math/round.hpp"
 #include "vector2d.hpp"
+#include "wrap-hwlib.hpp"
 #include <array>
+
+// Temporary struct, will be removed in a later version.
+struct ArrayCoordinate {
+    uint8_t x;
+    uint8_t y;
+};
 
 namespace Mapping {
 /**
@@ -122,6 +129,59 @@ class Map2D {
      * @return [out] - the map as a graph
      */
     Pathfinding::Graph getGraph() {
+
+        // Test grid.
+        std::array<std::array<bool, 8>, 6> grid{{{0, 1, 0, 0, 0, 0, 0, 0},
+                                                 {0, 1, 0, 0, 0, 0, 0, 0},
+                                                 {0, 1, 0, 1, 0, 0, 0, 0},
+                                                 {0, 1, 1, 1, 1, 1, 0, 0},
+                                                 {0, 1, 0, 0, 1, 1, 0, 0},
+                                                 {0, 0, 0, 0, 1, 0, 0, 0}}};
+
+        // Temporary storage for 2 bool locations.
+        // This is required because the algorithm has to be one step behind at all times.
+        ArrayCoordinate arr[2];
+
+        // Alternates between true and false to select 2 different array elements.
+        bool arr_index = false;
+
+        // Currently required to not go out of bounds at first iteration.
+        bool first_iter = true;
+
+        // Filter space between potential nodes.
+        for (uint8_t x = 1; x < 5; ++x) {
+            for (uint8_t y = 1; y < 7; ++y) {
+                if (grid[x][y]) {
+
+                    // If potential node can be removed.
+                    if ((grid[x][y - 1] == grid[x][y + 1]) && (grid[x - 1][y] == grid[x + 1][y])) {
+                        arr[arr_index].x = x;
+                        arr[arr_index].y = y;
+
+                        if (first_iter) {
+                            first_iter = false;
+                        } else {
+                            // Set the previously detected bool to false.
+                            grid[arr[!arr_index].x][arr[!arr_index].y] = false;
+                        }
+
+                        // Flip the index to store a new bool location.
+                        arr_index = !arr_index;
+                    }
+                }
+            }
+        }
+
+        // Set the last bool element detected to false.
+        grid[arr[!arr_index].x][arr[!arr_index].y] = false;
+
+        for (uint8_t x = 0; x < 6; ++x) {
+            for (uint8_t y = 0; y < 8; ++y) {
+                hwlib::cout << ((grid[x][y]) ? '1' : '0');
+            }
+            hwlib::cout << '\n';
+        }
+
         return Pathfinding::Graph(nullptr, 0, nullptr, 0);
     }
 

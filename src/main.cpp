@@ -1,12 +1,13 @@
+#include "map2d.hpp"
 #include "wrap-hwlib.hpp"
 
 int main() {
     WDT->WDT_MR = WDT_MR_WDDIS;
 
     hwlib::wait_ms(1000);
-    hwlib::cout << "Hello world!" << hwlib::endl;
 
-    // hwlib::target::pin_out a = hwlib::target::pin_out(hwlib::target::pins::d10);
+    Mapping::Map2D<10, 10> map(Mapping::Vector2D(5, 5), Mapping::Angle(Mapping::AngleType::DEG, 0), 3);
+    map.getGraph();
 
     return 0;
 }
