@@ -70,6 +70,13 @@ class Map2D {
         grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
+    /**
+     * @brief returns if the point is in the map.
+     *
+     * This method returns wether or not the point is within the boundaries of the map.
+     *
+     * @param [in] point The point which will be checked if it is on the map, as a Vector2D.
+     */
     bool pointWithinMap(const Vector2D &point) {
         return (point.x >= 0 && point.x < X && point.y >= 0 && point.y < Y);
     }
