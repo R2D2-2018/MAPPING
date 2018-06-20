@@ -14,4 +14,7 @@ set (sources
     src/angle.cpp
     src/math/math.cpp
     src/math/round.cpp
+    src/Pathfinding_mock/node.cpp
+    src/Pathfinding_mock/graph.cpp
+    src/Pathfinding_mock/pathfinding.cpp
 )

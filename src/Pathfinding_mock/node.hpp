@@ -1,39 +1,41 @@
 /**
- * @file
- * @brief     mock node class
- * @author    Bendeguz Toth
+ * @file      node.hpp
+ * @brief     Node class declarations
+ * @author    Julian van Doorn
  * @license   See LICENSE
  */
 
 #ifndef NODE_HPP
 #define NODE_HPP
 
-#include <stdint.h>
+#include "../wrap-hwlib.hpp"
 
 namespace Pathfinding {
-//< This is a mock class of the Node class used by path finding.
-//< It contains a (dummy) implementations of the methods that are
-//< relevant for this module (mapping) in order to create a new
-//< instance of Pathfinding::Graph. The content of this file is
-//< based on the state of the development branch of PATHFINDING
-//< at 11:56 PM 31/5/2018. When the module gets updated, this
-//< file needs to be cahnged manually.
-//< Unfortunately, the pathfinding module is running on a
-//< different platform currently, so it is not possible to
-//< simply include the file from the pathfinding repo, however
-//< that would be desirable.
+using NodeId = uint32_t;
+using Edge = class Node *;
+using NodeArray = class Node *;
+using EdgeArray = Edge *;
+
 class Node {
+  private:
+    int32_t id;
+    EdgeArray edges;
+    uint32_t edgesCount;
+    uint32_t state;
+    Edge parent;
+
   public:
     /**
      * @brief Empty constructor
      */
-    Node(){};
+    Node();
+
     /**
      * @brief Construct a new Node object with the given id
      *
      * @param id Id of the constructed node
      */
-    Node(uint32_t id){};
+    Node(int32_t id);
 
     /**
      * @brief Construct a new Node object with the given id and edges
@@ -42,8 +44,84 @@ class Node {
      * @param edges Edges array to use for this node
      * @param edgesCount Amount of edges this node has
      */
-    Node(uint32_t id, Node **edges, uint32_t edgesCount){};
+    Node(int32_t id, EdgeArray edges, uint32_t edgesCount);
+
+    /**
+     * @brief Returns the Id of this node as set by the constructor
+     *
+     * @return -1 when id is not set, any other int when id is set
+     */
+    int32_t getId() const;
+
+    /**
+     * @brief Gets the edges array of this Node
+     *
+     * @param[out] edges Edges array pointer to change its value to Node** Node::edges
+     * @param[out] edgesCount Integer pointer to change its value to the length of Node** Node::edges
+     */
+    void getEdges(EdgeArray &edges, uint32_t &edgesCount) const;
+
+    /**
+     * @brief Sets the edges array of this Node
+     *
+     * @param[in] edges Edges array to useas reference
+     * @param[in] edgesCount Amount of edges the edges array has
+     */
+    void setEdges(EdgeArray edges, uint32_t edgesCount);
+
+    /**
+     * @brief Returns int Node::state
+     *
+     * @return int State of this node
+     */
+    uint32_t getState() const;
+
+    /**
+     * @brief Changes int Node::state to state
+     *
+     * @param state State this node should have
+     */
+    void setState(uint32_t state);
+
+    /**
+     * @brief Get the parent of this node
+     *
+     * @return Node* Parent of this node
+     */
+    Node &getParent() const;
+
+    /**
+     * @brief Set the parent of this node
+     *
+     * @param parent Parent of this node
+     */
+    void setParent(Node &parent);
+
+    /**
+     * @brief Set the parent of this node
+     *
+     * @param parent Parent of this node
+     */
+    void setParent(std::nullptr_t parent);
+
+    bool operator==(const Node &n) const {
+        return this == &n;
+    }
+
+    bool operator!=(const Node &n) const {
+        return !(this == &n);
+    }
+
+    bool operator==(nullptr_t n) const {
+        (void)n; // Suppress warning for now.
+        return this == n;
+    }
+
+    bool operator!=(nullptr_t n) const {
+        (void)n; // Suppress warning for now.
+        return !(this == n);
+    }
 };
 } // namespace Pathfinding
 
-#endif
+#endif // NODE_HPP

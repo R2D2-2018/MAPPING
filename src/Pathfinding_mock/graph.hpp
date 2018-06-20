@@ -1,7 +1,7 @@
 /**
- * @file
- * @brief     mock graph class
- * @author    Bendeguz Toth
+ * @file      graph.hpp
+ * @brief     Graph class declarations
+ * @author    Julian van Doorn
  * @license   See LICENSE
  */
 
@@ -12,18 +12,19 @@
 
 namespace Pathfinding {
 class Graph {
-    //< This is a mock class of the Graph class used by path finding.
-    //< It contains a (dummy) implementations of the methods that are
-    //< relevant for this module (mapping) in order to create a new
-    //< instance of Pathfinding::Graph. The content of this file is
-    //< based on the state of the development branch of PATHFINDING
-    //< at 11:56 PM 31/5/2018. When the module gets updated, this
-    //< file needs to be cahnged manually.
-    //< Unfortunately, the pathfinding module is running on a
-    //< different platform currently, so it is not possible to
-    //< simply include the file from the pathfinding repo, however
-    //< that would be desirable.
+  private:
+    NodeArray nodes;
+    uint32_t nodeCount;
+
   public:
+    /**
+     * @brief Default Graph Constructor
+     *
+     * @details
+     * Constructs a graph object with all external references and parameters nulled.
+     */
+    Graph();
+
     /**
      * @brief Construct a new Graph object
      *
@@ -36,8 +37,38 @@ class Graph {
      * @param[in] cumulativeEdges Array of all edges in this graph.
      * @param[in] cumulativeEdgesCount Count of all edges in this graph.
      */
-    Graph(Node *nodes, uint32_t nodeCount, Node **cumulativeEdges, uint32_t cumulativeEdgesCount){};
+    Graph(NodeArray nodes, uint32_t nodeCount);
+
+    /**
+     * @brief Replaces the pointers given with pointers pointing towards Node* Graph::nodes and its length
+     *
+     * @param[out] nodes Nodes array pointer to write to
+     * @param[out] len Length of the nodes array
+     */
+    void getNodes(NodeArray &nodes, uint32_t &len) const;
+
+    /**
+     * @brief Returns a reference to the Node with the given id
+     *
+     * @param[in] id Id to find in nodes
+     */
+    Node &getNodeWithId(NodeId id) const;
+
+    /**
+     * @brief Sets the internal nodes pointer to point to the given NodeArray nodes and sets the internal nodeCount to len
+     *
+     * @param[in] nodes
+     * @param[in] len
+     */
+    void setNodes(NodeArray nodes, uint32_t len);
+
+    /**
+     * @brief Returns a pointer to the first node in Node* Graph::nodes
+     *
+     * @return Node* First node in Node* Graph::nodes
+     */
+    NodeArray getNodes() const;
 };
 } // namespace Pathfinding
 
-#endif
+#endif // GRAPH_HPP

@@ -9,6 +9,7 @@
 #define MAP2D_HPP
 
 #include "Pathfinding_mock/graph.hpp"
+#include "Pathfinding_mock/pathfinding.hpp"
 #include "angle.hpp"
 #include "math/math.hpp"
 #include "math/round.hpp"
@@ -124,52 +125,34 @@ class Map2D {
      */
     Pathfinding::Graph getGraph() {
 
-        // Test grid.
-        std::array<std::array<bool, 8>, 6> grid{{{0, 1, 0, 0, 0, 0, 0, 0},
-                                                 {0, 1, 0, 0, 0, 0, 0, 0},
-                                                 {0, 1, 0, 1, 0, 0, 0, 0},
-                                                 {0, 1, 1, 1, 1, 1, 0, 0},
-                                                 {0, 1, 0, 0, 1, 1, 0, 0},
-                                                 {0, 0, 0, 0, 1, 0, 0, 0}}};
+        // Test grid. 72 1s.
+        std::array<std::array<bool, 13>, 13> grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                                   {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                   {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+                                                   {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
+                                                   {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0},
+                                                   {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0},
+                                                   {0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+                                                   {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                   {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                                   {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                   {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                                   {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
+                                                   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
 
-        uint8_t temp_x, temp_y;
-
-        // Currently required to not go out of bounds at first iteration.
-        bool first_iter = true;
-
-        // Filter space between potential nodes.
-        for (uint8_t x = 1; x < 5; ++x) {
-            for (uint8_t y = 1; y < 7; ++y) {
-                if (grid[x][y]) {
-
-                    // If potential node can be removed.
-                    if ((grid[x][y - 1] == grid[x][y + 1]) && (grid[x - 1][y] == grid[x + 1][y])) {
-                        if (first_iter) {
-                            first_iter = false;
-                        } else {
-                            // Set the previously detected bool to false.
-                            grid[temp_x][temp_y] = false;
-                        }
-                        temp_x = x;
-                        temp_y = y;
-                    }
+        uint32_t nodeIndex = 0;
+        for (uint16_t y = 0; y < grid.size(); ++y) {
+            for (uint16_t x = 0; x < grid[y].size(); ++x) {
+                if (grid[y][x]) {
+                    Pathfinding::addNode(nodeIndex);
+                    ++nodeIndex;
                 }
             }
         }
 
-        if (!first_iter) {
-            // Set the last bool element detected to false.
-            grid[temp_x][temp_y] = false;
-        }
+        hwlib::cout << nodeIndex << '\n';
 
-        for (uint8_t x = 0; x < 6; ++x) {
-            for (uint8_t y = 0; y < 8; ++y) {
-                hwlib::cout << ((grid[x][y]) ? '1' : '0');
-            }
-            hwlib::cout << '\n';
-        }
-
-        return Pathfinding::Graph(nullptr, 0, nullptr, 0);
+        return Pathfinding::Graph();
     }
 
     /**
