@@ -28,11 +28,11 @@ void Mapping::Angle::set(Mapping::AngleType type, double value) {
     }
 }
 
-double Mapping::Angle::asDegree() {
+double Mapping::Angle::asDegree() const {
     return angleInDeg;
 }
 
-double Mapping::Angle::asRadian() {
+double Mapping::Angle::asRadian() const {
     return angleInDeg / (180 / pi);
 }
 

@@ -65,9 +65,45 @@ class Map2D {
      * NOTE: This value is given in cm, not in grid points!
      */
     void setRelativePointAsImpassable(Angle angle, double distance) {
-        auto absoluteVector =
-            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
-        grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
+        auto pointPosition = calculateRelativePosition(angle, distance);
+        if (pointWithinMap(pointPosition)) {
+            grid[pointPosition.x][pointPosition.y] = true;
+        }
+    }
+
+    /**
+     * @brief returns if the point is in the map.
+     *
+     * This method returns wether or not the point is within the boundaries of the map.
+     *
+     * @param [in] point The point which will be checked if it is on the map, as a Vector2D.
+     *
+     * @return boolean if point is within map.
+     */
+    bool pointWithinMap(const Vector2D &point) const {
+        return (point.x >= 0 && point.x < X && point.y >= 0 && point.y < Y);
+    }
+
+    /**
+     * @brief calculate a position on angle and distance from current position.
+     *
+     * This method calculates an absolute vector from angle and distance and then adds that to the current sensor position.
+     * The new vector is returned.
+     *
+     * @param [in] angle: The angle in which the position
+     * is changed. Angle 0 is pointing downwards, and
+     * grows counterclockwise.
+     *
+     * @param [in] distance: The distance delta
+     * of the sensor in centimeters.
+     * NOTE: This value is given in cm, not in grid points!
+     *
+     * @return a new position from the absolute vector of angle and distance, added to the sensorPosition.
+     */
+    Vector2D calculateRelativePosition(const Angle &angle, const double &distance) const {
+        auto absoluteVector = Vector2D(math::round((math::sin(angle.asRadian()) * distance) / scale),
+                                       math::round((math::cos(angle.asRadian()) * distance) / scale));
+        return sensorPosition + absoluteVector;
     }
 
   public:
@@ -132,12 +168,15 @@ class Map2D {
      * sensor to the given absolute location.
      * If you wish to move the sensor with a delta instead,
      * use moveSensorCm()
+     * If the new position is outside of the internal map, the sensor position will remain unchanged.
      *
      * @param [in] newPosition: The new absolute position of the
      * sensor.
      */
     void setSensorPosition(Vector2D newPosition) {
-        sensorPosition = newPosition;
+        if (pointWithinMap(newPosition)) {
+            sensorPosition = newPosition;
+        }
     }
 
     /**
@@ -160,6 +199,10 @@ class Map2D {
     /**
      * @brief Moves the sensor with the given delta.
      *
+     * This method moves the sensor in the angle direction for distance in cm.
+     * If the new Position is not within the boundaries of the map, the sensorPosition remains unchanged and
+     * the rotation of the sensor will also remain unchanged (even if setRotation is true).
+     *
      * @param [in] angle: The angle in which the position
      * is changed. Angle 0 is pointing downwards, and
      * grows counterclockwise.
@@ -172,11 +215,12 @@ class Map2D {
      * as the angle of the sensor.
      */
     void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
-        auto absolutVector =
-            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
-        sensorPosition += Vector2D(math::round(absolutVector.x / scale), math::round(absolutVector.y / scale));
-        if (setRotation) {
-            sensorAngle = angle;
+        auto newPosition = calculateRelativePosition(angle, distance);
+        if (pointWithinMap(newPosition)) {
+            sensorPosition = newPosition;
+            if (setRotation) {
+                sensorAngle = angle;
+            }
         }
     }
 
