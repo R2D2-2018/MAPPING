@@ -70,6 +70,10 @@ class Map2D {
         grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
+    bool pointWithinMap(const Vector2D &point) {
+        return (point.x >= 0 && point.x < X && point.y >= 0 && point.y < Y);
+    }
+
   public:
     /**
      * @brief ctor
@@ -138,7 +142,7 @@ class Map2D {
      * sensor.
      */
     void setSensorPosition(Vector2D newPosition) {
-        if (newPosition.x > 0 && newPosition.x < X && newPosition.y > 0 && newPosition.y < Y) {
+        if (pointWithinMap(newPosition)) {
             sensorPosition = newPosition;
         }
     }
