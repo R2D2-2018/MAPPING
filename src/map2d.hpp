@@ -132,12 +132,15 @@ class Map2D {
      * sensor to the given absolute location.
      * If you wish to move the sensor with a delta instead,
      * use moveSensorCm()
+     * If the new position is outside of the internal map, the sensor position will remain unchanged.
      *
      * @param [in] newPosition: The new absolute position of the
      * sensor.
      */
     void setSensorPosition(Vector2D newPosition) {
-        sensorPosition = newPosition;
+        if (newPosition.x > 0 && newPosition.x < X && newPosition.y > 0 && newPosition.y < Y) {
+            sensorPosition = newPosition;
+        }
     }
 
     /**
