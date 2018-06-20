@@ -155,6 +155,7 @@ class ObjectPool {
 
         for (uint32_t i = 0; i < POOL_SIZE; i++) {
             if ((i == 0 || getAvailable(i - 1)) && getAvailable(i)) {
+
                 if (firstAvailableIndex == -1) {
                     firstAvailableIndex = i;
                 }
@@ -172,12 +173,15 @@ class ObjectPool {
         }
 
         if (found == true) {
+            hwlib::cout << "correct\n";
+
             for (uint32_t i = firstAvailableIndex; i < firstAvailableIndex + availabilityCounter; i++) {
                 setAvailable(i, false);
             }
 
             return &blocks[firstAvailableIndex];
         } else {
+            hwlib::cout << "failed\n";
             return nullptr;
         }
     }

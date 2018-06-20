@@ -8,7 +8,6 @@
 #ifndef MAP2D_HPP
 #define MAP2D_HPP
 
-#include "Pathfinding_mock/graph.hpp"
 #include "Pathfinding_mock/pathfinding.hpp"
 #include "angle.hpp"
 #include "math/math.hpp"
@@ -18,6 +17,22 @@
 #include <array>
 
 namespace Mapping {
+
+// Test grid. 72 1s.
+static std::array<std::array<bool, 13>, 13> test_grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                                       {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                       {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+                                                       {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
+                                                       {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0},
+                                                       {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0},
+                                                       {0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+                                                       {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                       {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                                       {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                                                       {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                                       {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
+                                                       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
+
 /**
  * @brief This class represents a 2d map.
  *
@@ -124,31 +139,24 @@ class Map2D {
      * @return [out] - the map as a graph
      */
     Pathfinding::Graph getGraph() {
-
-        // Test grid. 72 1s.
-        static std::array<std::array<bool, 13>, 13> grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                                          {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                          {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-                                                          {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
-                                                          {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0},
-                                                          {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0},
-                                                          {0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-                                                          {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                          {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                                                          {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                          {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                                                          {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
-                                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
-
         uint32_t nodeIndex = 0;
-        for (uint16_t y = 0; y < grid.size(); ++y) {
-            for (uint16_t x = 0; x < grid[y].size(); ++x) {
-                if (grid[y][x]) {
-                    Pathfinding::addNode(nodeIndex);
+        for (uint16_t y = 0; y < test_grid.size(); ++y) {
+            for (uint16_t x = 0; x < test_grid[y].size(); ++x) {
+                if (test_grid[y][x]) {
+                    if (Pathfinding::addNode(nodeIndex)) {
+                        hwlib::cout << "Node added.\n";
+                    };
                     ++nodeIndex;
                 }
             }
         }
+
+        // Connect nodes with edges.
+        /*for (uint16_t i = 0; i < nodeIndex - 1; ++i) {
+            if (Pathfinding::addEdge(nodeIndex, nodeIndex + 1)) {
+                hwlib::cout << "Connected nodes\n";
+            };
+        }*/
 
         hwlib::cout << nodeIndex << '\n';
 

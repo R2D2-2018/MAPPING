@@ -9,5 +9,7 @@ int main() {
     Mapping::Map2D<10, 10> map(Mapping::Vector2D(5, 5), Mapping::Angle(Mapping::AngleType::DEG, 0), 3);
     map.getGraph();
 
+    Pathfinding::addNode(0);
+
     return 0;
 }
