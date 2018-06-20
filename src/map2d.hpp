@@ -174,6 +174,10 @@ class Map2D {
     /**
      * @brief Moves the sensor with the given delta.
      *
+     * This method moves the sensor in the angle direction for distance in cm.
+     * If the new Position is not within the boundaries of the map, the sensorPosition remains unchanged and
+     * the rotation of the sensor will also remain unchanged (even if setRotation is true).
+     *
      * @param [in] angle: The angle in which the position
      * is changed. Angle 0 is pointing downwards, and
      * grows counterclockwise.
@@ -186,9 +190,13 @@ class Map2D {
      * as the angle of the sensor.
      */
     void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
-        auto absolutVector =
-            Vector2D(math::round(math::sin(angle.asRadian()) * distance), math::round(math::cos(angle.asRadian()) * distance));
-        sensorPosition += Vector2D(math::round(absolutVector.x / scale), math::round(absolutVector.y / scale));
+        auto absolutVector = Vector2D(math::round((math::sin(angle.asRadian()) * distance) / scale),
+                                      math::round((math::cos(angle.asRadian()) * distance) / scale));
+        auto newPosition = sensorPosition + absolutVector;
+        if (!pointWithinMap(newPosition)) {
+            return;
+        }
+        sensorPosition = newPosition;
         if (setRotation) {
             sensorAngle = angle;
         }
