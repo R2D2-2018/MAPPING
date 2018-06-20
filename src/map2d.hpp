@@ -77,6 +77,8 @@ class Map2D {
      * This method returns wether or not the point is within the boundaries of the map.
      *
      * @param [in] point The point which will be checked if it is on the map, as a Vector2D.
+     *
+     * @return boolean if point is within map.
      */
     bool pointWithinMap(const Vector2D &point) const {
         return (point.x >= 0 && point.x < X && point.y >= 0 && point.y < Y);
