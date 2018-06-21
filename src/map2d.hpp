@@ -151,13 +151,6 @@ class Map2D {
             }
         }
 
-        // Connect nodes with edges.
-        /*for (uint16_t i = 0; i < nodeIndex - 1; ++i) {
-            if (Pathfinding::addEdge(nodeIndex, nodeIndex + 1)) {
-                hwlib::cout << "Connected nodes\n";
-            };
-        }*/
-
         hwlib::cout << nodeIndex << '\n';
 
         return Pathfinding::Graph();

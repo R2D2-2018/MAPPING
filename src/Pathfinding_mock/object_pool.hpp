@@ -121,6 +121,15 @@ class ObjectPool {
         }
     }
 
+    template <class OS>
+    void printBlockAvailability(OS &os) const {
+        for (uint32_t i = 0; i < availabilityBitmaskLen; i++) {
+            for (uint8_t b = 0; b < 8; b++) {
+                os << ((uint32_t)availabilityBitmask[i] >> b & 1);
+            }
+        }
+    }
+
   public:
     /**
      * @brief Construct a new Object Pool object
@@ -204,6 +213,26 @@ class ObjectPool {
             setAvailable(blockIndex, true);
             blockIndex++;
         }
+    }
+
+    /**
+     * @brief Print operator for ObjectPool
+     *
+     * @details
+     * Prints "ObjectPool with availabilityBitmask: xxxxxxxx" where xxxxxxxx is a list
+     * of ones and zeroes representing the availabilityBitmask. The length of said list
+     * varies based on the given POOL_SIZE
+     *
+     * @tparam OS
+     * @param os Output Stream to write to
+     * @param cp ObjectPool to print
+     * @return OS& Allows for chaining << calls
+     */
+    template <class OS>
+    friend OS &operator<<(OS &os, const ObjectPool &cp) {
+        os << "ObjectPool with availabilityBitmask: ";
+        cp.printBlockAvailability(os);
+        return os;
     }
 };
 } // namespace Pathfinding

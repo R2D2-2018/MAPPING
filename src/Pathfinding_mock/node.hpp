@@ -104,6 +104,11 @@ class Node {
      */
     void setParent(std::nullptr_t parent);
 
+    template <class T>
+    friend T &operator<<(T &os, const Node &n) {
+        return os << "Node " << n.id;
+    }
+
     bool operator==(const Node &n) const {
         return this == &n;
     }

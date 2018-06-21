@@ -14,7 +14,7 @@
 #include <array>
 
 namespace Pathfinding {
-constexpr const uint32_t graphsLen = 1;
+constexpr const uint32_t graphsLen = 10;
 constexpr const uint32_t nodesLen = 128;
 constexpr const uint32_t edgesLen = 512;
 extern std::array<Graph, graphsLen> graphs;

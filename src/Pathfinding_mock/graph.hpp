@@ -68,6 +68,11 @@ class Graph {
      * @return Node* First node in Node* Graph::nodes
      */
     NodeArray getNodes() const;
+
+    template <class T>
+    friend T &operator<<(T &os, const Graph &n) {
+        return os << "Graph " << (void *)&n;
+    }
 };
 } // namespace Pathfinding
 

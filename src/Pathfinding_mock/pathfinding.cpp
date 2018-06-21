@@ -5,22 +5,6 @@ std::array<Graph, graphsLen> graphs = {};
 ObjectPool<Node, nodesLen> nodePool = {};
 ObjectPool<Edge, edgesLen> edgePool = {};
 
-#ifdef BMPTK_TARGET_test
-Graph &getDebugGraph() {
-    return graphs[0];
-}
-
-NodeArray getDebugNodes() {
-    return graphs[0].getNodes();
-}
-
-void reset() {
-    graphs = std::array<Graph, graphsLen>{};
-    nodePool = ObjectPool<Node, nodesLen>();
-    edgePool = ObjectPool<Edge, edgesLen>();
-}
-#endif
-
 bool addNode(NodeId nodeId) {
     Graph &graph = graphs[0];
 
