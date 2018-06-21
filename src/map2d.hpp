@@ -138,14 +138,17 @@ class Map2D {
      *
      * @return [out] - the map as a graph
      */
-    Pathfinding::Graph getGraph() {
+    Pathfinding::Graph getGraph(Pathfinding::pathfindingWrap &pf) {
         uint32_t nodeIndex = 0;
         for (uint16_t y = 0; y < test_grid.size(); ++y) {
             for (uint16_t x = 0; x < test_grid[y].size(); ++x) {
                 if (test_grid[y][x]) {
-                    if (Pathfinding::addNode(nodeIndex)) {
+                    if (pf.addNode(nodeIndex)) {
+                        // hwlib::cout << pf.getNodePool() << '\n';
                         hwlib::cout << "Node added.\n";
-                    };
+                    } else {
+                        hwlib::cout << "Node not added.\n";
+                    }
                     ++nodeIndex;
                 }
             }

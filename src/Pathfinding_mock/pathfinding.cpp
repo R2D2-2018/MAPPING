@@ -1,15 +1,8 @@
 #include "pathfinding.hpp"
 
 namespace Pathfinding {
-/*std::array<Graph, graphsLen> graphs = {};
-ObjectPool<char, nodesLen> nodePool = {};
-ObjectPool<Edge, edgesLen> edgePool = {};
-*/
 
-ObjectPool<char, 64> nodePool = {};
-
-/*
-bool addNode(NodeId nodeId) {
+bool pathfindingWrap::addNode(NodeId nodeId) {
     Graph &graph = graphs[0];
 
     NodeArray nodes;
@@ -37,7 +30,7 @@ bool addNode(NodeId nodeId) {
     return true;
 }
 
-bool addEdge(NodeId node0Id, NodeId node1Id) {
+bool pathfindingWrap::addEdge(NodeId node0Id, NodeId node1Id) {
     Graph &graph = graphs[0];
 
     Node &node0 = graph.getNodeWithId(node0Id);
@@ -89,5 +82,5 @@ bool addEdge(NodeId node0Id, NodeId node1Id) {
     }
 
     return true;
-}*/
+}
 } // namespace Pathfinding

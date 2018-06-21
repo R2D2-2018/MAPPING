@@ -182,15 +182,12 @@ class ObjectPool {
         }
 
         if (found == true) {
-            hwlib::cout << "correct\n";
-
             for (uint32_t i = firstAvailableIndex; i < firstAvailableIndex + availabilityCounter; i++) {
                 setAvailable(i, false);
             }
 
             return &blocks[firstAvailableIndex];
         } else {
-            hwlib::cout << "failed\n";
             return nullptr;
         }
     }
