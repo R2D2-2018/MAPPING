@@ -1,3 +1,4 @@
+#include "Pathfinding_mock/pathfinding.hpp"
 #include "map2d.hpp"
 #include "wrap-hwlib.hpp"
 
@@ -9,8 +10,13 @@ int main() {
     // Mapping::Map2D<10, 10> map(Mapping::Vector2D(5, 5), Mapping::Angle(Mapping::AngleType::DEG, 0), 3);
     // map.getGraph();
 
-    Pathfinding::addNode(0);
+    // ObjectPool<char, 64> in pathfinding.hpp
     hwlib::cout << Pathfinding::nodePool << '\n';
+    // 0000000000000000000000000000000000000000000000000000000000000000
+
+    Pathfinding::ObjectPool<char, 64> pool = {};
+    hwlib::cout << pool << '\n';
+    // 1111111111111111111111111111111111111111111111111111111111111111
 
     return 0;
 }

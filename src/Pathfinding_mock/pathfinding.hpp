@@ -14,12 +14,14 @@
 #include <array>
 
 namespace Pathfinding {
+/*
 constexpr const uint32_t graphsLen = 10;
-constexpr const uint32_t nodesLen = 128;
+constexpr const uint32_t nodesLen = 64;
 constexpr const uint32_t edgesLen = 512;
 extern std::array<Graph, graphsLen> graphs;
-extern ObjectPool<Node, nodesLen> nodePool;
-extern ObjectPool<NodeArray, edgesLen> edgePool;
+extern ObjectPool<char, nodesLen> nodePool;
+extern ObjectPool<NodeArray, edgesLen> edgePool;*/
+extern ObjectPool<char, 64> nodePool;
 
 /**
  * @brief Adds a node to the internal graph used for pathfinding.
