@@ -19,7 +19,7 @@
 namespace Mapping {
 
 // Test grid. 72 1s.
-static std::array<std::array<bool, 13>, 13> test_grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+static std::array<std::array<bool, 13>, 13> test_grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
                                                        {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
                                                        {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
                                                        {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
@@ -87,34 +87,36 @@ class Map2D {
         grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
-    uint8_t checkGridElement(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        uint8_t count = 0;
+    uint8_t checkPixelConnectivity(const bool &top, const bool &right, const bool &bottom, const bool &left) {
+        uint8_t edges = 0;
         if (top)
-            ++count;
+            ++edges;
         if (left)
-            ++count;
+            ++edges;
         if (right)
-            ++count;
+            ++edges;
         if (bottom)
-            ++count;
+            ++edges;
 
-        if (count == 1) // end
+        if (edges == 0) // Alone
+            hwlib::cout << "x";
+        if (edges == 1) // End
             hwlib::cout << "o";
-        if (count == 2) { // Corner or line
-            if (top & bottom) {
+        if (edges == 2) {       // Corner or line
+            if (top & bottom) { // Vertical line
                 hwlib::cout << "|";
-            } else if (right & left) {
+            } else if (right & left) { // Horizontal line
                 hwlib::cout << "-";
             } else { // Corner
                 hwlib::cout << "o";
             }
         }
-        if (count == 3) // branch
+        if (edges == 3) // Branch
             hwlib::cout << "o";
-        if (count == 4) // Crossing
+        if (edges == 4) // Intersection
             hwlib::cout << "o";
 
-        return count;
+        return edges;
     }
 
   public:
@@ -169,29 +171,81 @@ class Map2D {
      * @return [out] - the map as a graph
      */
     Pathfinding::Graph getGraph(Pathfinding::pathfindingWrap &pf) {
-        uint32_t nodeIndex = 0;
+        uint8_t colLen = test_grid.size();
+        uint8_t rowLen = test_grid[0].size();
 
-        uint32_t added = 0;
+        uint8_t numEdges;
 
-        for (uint16_t y = 0; y < test_grid.size(); ++y) {
-            for (uint16_t x = 0; x < test_grid[y].size(); ++x) {
+        // Check corners.
+        if (test_grid[0][0]) {
+            numEdges = checkPixelConnectivity(0, test_grid[0][1], test_grid[1][0], 0);
+        }
+
+        if (test_grid[0][rowLen - 1]) {
+            numEdges = checkPixelConnectivity(0, 0, test_grid[1][rowLen - 1], test_grid[0][rowLen - 2]);
+        }
+
+        if (test_grid[colLen - 1][0]) {
+            numEdges = checkPixelConnectivity(test_grid[colLen - 2][0], test_grid[colLen - 1][1], 0, 0);
+        }
+
+        if (test_grid[colLen - 1][rowLen - 1]) {
+            numEdges = checkPixelConnectivity(test_grid[colLen - 2][rowLen - 1], 0, 0, test_grid[colLen - 1][rowLen - 2]);
+        }
+
+        hwlib::cout << '\n';
+
+        // Check horizontal boundaries.
+        for (uint8_t y = 0; y < colLen; y += (colLen - 1)) {
+            for (uint8_t x = 1; x < rowLen - 1; ++x) {
+                if (test_grid[y][x]) {
+                    if (y == 0) {
+                        numEdges = checkPixelConnectivity(0, test_grid[0][x + 1], test_grid[1][x], test_grid[0][x - 1]);
+                    } else {
+                        numEdges = checkPixelConnectivity(test_grid[colLen - 2][x], test_grid[colLen - 1][x + 1], 0,
+                                                          test_grid[colLen - 1][x - 1]);
+                    }
+                }
+            }
+        }
+
+        hwlib::cout << '\n';
+
+        // Check vertical boundaries.
+        for (uint8_t y = 1; y < colLen - 1; ++y) {
+            for (uint8_t x = 0; x < rowLen; x += (rowLen - 1)) {
+                if (test_grid[y][x]) {
+                    if (x == 0) {
+                        numEdges = checkPixelConnectivity(test_grid[y - 1][0], test_grid[y][x + 1], test_grid[y + 1][0], 0);
+                    } else {
+                        numEdges = checkPixelConnectivity(test_grid[y - 1][0], 0, test_grid[y + 1][0], test_grid[y][x - 1]);
+                    }
+                }
+            }
+        }
+
+        hwlib::cout << '\n';
+
+        for (uint8_t y = 1; y < colLen - 1; ++y) {
+            for (uint8_t x = 1; x < rowLen - 1; ++x) {
                 if (test_grid[y][x]) {
                     uint8_t numEdges =
-                        checkGridElement(test_grid[y - 1][x], test_grid[y][x + 1], test_grid[y + 1][x], test_grid[y][x - 1]);
-                    /*if (pf.addNode(nodeIndex)) {
-                        // hwlib::cout << pf.getNodePool() << '\n';
-                        hwlib::cout << "Node added.\n";
-                        ++added;
-                    } else {
-                        hwlib::cout << "Node not added.\n";
-                    }*/
-                    //++nodeIndex;
+                        checkPixelConnectivity(test_grid[y - 1][x], test_grid[y][x + 1], test_grid[y + 1][x], test_grid[y][x - 1]);
                 } else {
                     hwlib::cout << ' ';
                 }
             }
             hwlib::cout << '\n';
         }
+
+        /*if (pf.addNode(nodeIndex)) {
+            // hwlib::cout << pf.getNodePool() << '\n';
+            hwlib::cout << "Node added.\n";
+            ++added;
+        } else {
+            hwlib::cout << "Node not added.\n";
+        }*/
+        //++nodeIndex;
 
         // hwlib::cout << nodeIndex << " nodes of which " << +added << " nodes have been added.\n";
 
