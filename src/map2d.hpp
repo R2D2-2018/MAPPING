@@ -87,6 +87,36 @@ class Map2D {
         grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
+    uint8_t checkGridElement(const bool &top, const bool &right, const bool &bottom, const bool &left) {
+        uint8_t count = 0;
+        if (top)
+            ++count;
+        if (left)
+            ++count;
+        if (right)
+            ++count;
+        if (bottom)
+            ++count;
+
+        if (count == 1) // end
+            hwlib::cout << "o";
+        if (count == 2) { // Corner or line
+            if (top & bottom) {
+                hwlib::cout << "|";
+            } else if (right & left) {
+                hwlib::cout << "-";
+            } else { // Corner
+                hwlib::cout << "o";
+            }
+        }
+        if (count == 3) // branch
+            hwlib::cout << "o";
+        if (count == 4) // Crossing
+            hwlib::cout << "o";
+
+        return count;
+    }
+
   public:
     /**
      * @brief ctor
@@ -140,21 +170,30 @@ class Map2D {
      */
     Pathfinding::Graph getGraph(Pathfinding::pathfindingWrap &pf) {
         uint32_t nodeIndex = 0;
+
+        uint32_t added = 0;
+
         for (uint16_t y = 0; y < test_grid.size(); ++y) {
             for (uint16_t x = 0; x < test_grid[y].size(); ++x) {
                 if (test_grid[y][x]) {
-                    if (pf.addNode(nodeIndex)) {
+                    uint8_t numEdges =
+                        checkGridElement(test_grid[y - 1][x], test_grid[y][x + 1], test_grid[y + 1][x], test_grid[y][x - 1]);
+                    /*if (pf.addNode(nodeIndex)) {
                         // hwlib::cout << pf.getNodePool() << '\n';
                         hwlib::cout << "Node added.\n";
+                        ++added;
                     } else {
                         hwlib::cout << "Node not added.\n";
-                    }
-                    ++nodeIndex;
+                    }*/
+                    //++nodeIndex;
+                } else {
+                    hwlib::cout << ' ';
                 }
             }
+            hwlib::cout << '\n';
         }
 
-        hwlib::cout << nodeIndex << '\n';
+        // hwlib::cout << nodeIndex << " nodes of which " << +added << " nodes have been added.\n";
 
         return Pathfinding::Graph();
     }

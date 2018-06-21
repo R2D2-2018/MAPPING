@@ -15,8 +15,8 @@
 
 namespace Pathfinding {
 constexpr const uint32_t graphsLen = 1;
-constexpr const uint32_t nodesLen = 512;
-constexpr const uint32_t edgesLen = 2048;
+constexpr const uint32_t nodesLen = 640;
+constexpr const uint32_t edgesLen = 2560;
 
 // Temporary class to fix a problem with the object_pool.
 class pathfindingWrap {

@@ -1,4 +1,3 @@
-#include "Pathfinding_mock/pathfinding.hpp"
 #include "map2d.hpp"
 #include "wrap-hwlib.hpp"
 
@@ -7,7 +6,7 @@ int main() {
 
     hwlib::wait_ms(1000);
 
-    // Temporarily fixes the problem with the object_pool descirbed below.
+    // Temporarily fixes the problem with the object_pool described below.
     Pathfinding::pathfindingWrap pf;
 
     Mapping::Map2D<10, 10> map(Mapping::Vector2D(5, 5), Mapping::Angle(Mapping::AngleType::DEG, 0), 3);
