@@ -20,6 +20,6 @@ int main() {
     Pathfinding::ObjectPool<char, 64> pool = {};
     hwlib::cout << pool << '\n';
     // 1111111111111111111111111111111111111111111111111111111111111111
-*/
+    */
     return 0;
 }
