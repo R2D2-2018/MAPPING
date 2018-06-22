@@ -8,7 +8,6 @@
 #ifndef MAP2D_HPP
 #define MAP2D_HPP
 
-#include "Pathfinding_mock/pathfinding.hpp"
 #include "angle.hpp"
 #include "math/math.hpp"
 #include "math/round.hpp"
@@ -17,25 +16,6 @@
 #include <array>
 
 namespace Mapping {
-// Used for map to graph conversion, to remember visited/unvisited directions while moving through the matrix.
-enum class Direction { UP, RIGHT, DOWN, LEFT };
-Direction dir;
-Direction oppDir;
-
-// Test grid. 72 1s.
-static std::array<std::array<bool, 13>, 13> test_grid{{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                                       {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                       {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-                                                       {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
-                                                       {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0},
-                                                       {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0},
-                                                       {0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-                                                       {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                       {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                                                       {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                       {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                                       {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
 
 /**
  * @brief This class represents a 2d map.
@@ -91,63 +71,6 @@ class Map2D {
         grid[sensorPosition.x + (absoluteVector.x / scale)][sensorPosition.y + (absoluteVector.y / scale)] = true;
     }
 
-    // Logic function for moving through the matrix.
-    void moveGridPos(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        if (top && oppDir != Direction::UP) {
-            dir = Direction::UP;
-            oppDir = Direction::DOWN;
-        } else if (right && oppDir != Direction::RIGHT) {
-            dir = Direction::RIGHT;
-            oppDir = Direction::LEFT;
-        } else if (bottom && oppDir != Direction::DOWN) {
-            dir = Direction::DOWN;
-            oppDir = Direction::UP;
-        } else if (left && oppDir != Direction::LEFT) {
-            dir = Direction::LEFT;
-            oppDir = Direction::RIGHT;
-        }
-    }
-
-    // Checks how a pixel is connected and calls the appropriate functions with certain parameters.
-    uint8_t checkPixelConnectivity(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        uint8_t edges = 0;
-        if (top) {
-            ++edges;
-        }
-        if (right) {
-            ++edges;
-        }
-        if (bottom) {
-            ++edges;
-        }
-        if (left) {
-            ++edges;
-        }
-
-        moveGridPos(top, right, bottom, left);
-
-        // Order of if statements can be changed to improve performance.
-        if (edges == 1) {
-            hwlib::cout << "o";  // End
-        } else if (edges == 2) { // Corner or line
-            if (top & bottom) {  // Vertical line
-                hwlib::cout << "|";
-            } else if (right & left) { // Horizontal line
-                hwlib::cout << "-";
-            } else { // Corner
-                hwlib::cout << "o";
-            }
-        } else if (edges == 3) {
-            hwlib::cout << "o"; // Branch
-        } else if (edges == 4) {
-            hwlib::cout << "o"; // Intersection
-        } else {
-            hwlib::cout << "x"; // Alone
-        }
-
-        return edges;
-    }
-
   public:
     /**
      * @brief ctor
@@ -199,40 +122,9 @@ class Map2D {
      *
      * @return [out] - the map as a graph
      */
-    Pathfinding::Graph getGraph(Pathfinding::pathfindingWrap &pf) {
-        uint8_t colLen = test_grid.size();
-        uint8_t rowLen = test_grid[0].size();
-
-        uint8_t numEdges;
-
-        // Very early implementation, does not work with boundaries yet nor does it work with branches and intersections.
-        bool *ptr = &test_grid[1][1];
-        bool first = true; // Temporary
-        while (*ptr) {
-            numEdges = checkPixelConnectivity(*(ptr - rowLen), *(ptr + 1), *(ptr + rowLen), *(ptr - 1));
-            if ((numEdges == 2) || first) {
-                if (Mapping::dir == Mapping::Direction::UP) {
-                    hwlib::cout << " up\n";
-                    ptr -= rowLen;
-                } else if (Mapping::dir == Mapping::Direction::RIGHT) {
-                    hwlib::cout << " right\n";
-                    ptr += 1;
-                } else if (Mapping::dir == Mapping::Direction::DOWN) {
-                    hwlib::cout << " down\n";
-                    ptr += rowLen;
-                } else if (Mapping::dir == Mapping::Direction::LEFT) {
-                    hwlib::cout << " left\n";
-                    ptr -= 1;
-                }
-                first = false;
-            } else {
-                if (!first)
-                    break;
-            }
-        }
-
+    /*Pathfinding::Graph getGraph() {
         return Pathfinding::Graph();
-    }
+    }*/
 
     /**
      * @brief Sets the position of the sensor.
