@@ -17,48 +17,61 @@ namespace Mapping {
 template <typename T>
 class mapToGraphConverter {
   private:
-    // Temporary, edges can later be used to decide directions.
-    enum class Direction { UP, RIGHT, DOWN, LEFT };
-    Direction dir;
-    Direction oppDir;
-
     Pathfinding::pathfindingWrap &pf;
+
     uint8_t nodeIndex;
 
-    // Logic for traversing the grid.
-    void moveGridPos(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        if (top && oppDir != Direction::UP) {
-            dir = Direction::UP;
-            oppDir = Direction::DOWN;
-        } else if (right && oppDir != Direction::RIGHT) {
-            dir = Direction::RIGHT;
-            oppDir = Direction::LEFT;
-        } else if (bottom && oppDir != Direction::DOWN) {
-            dir = Direction::DOWN;
-            oppDir = Direction::UP;
-        } else if (left && oppDir != Direction::LEFT) {
-            dir = Direction::LEFT;
-            oppDir = Direction::RIGHT;
+    // Creates a byte to store the directions.
+    // The 4 LSB are the current unvisited edges.
+    // Top: 1000, right: 0100, bottom: 0010, left: 0001.
+    // If new_dir == 0 the node has been processed.
+    uint8_t prev_dir;
+    uint8_t new_dir;
+
+    // Hamming weight, Naive algorithm for counting the set bits.
+    // Stops when the digit is 0, should always be <= 4 loops when used to count number of directions.
+    uint8_t countSetBits(uint8_t dir) {
+        uint8_t count = 0;
+        while (dir) {
+            count += (dir & 1);
+            dir >>= 1;
+        }
+        return count;
+    }
+
+    // Prevents going back.
+    // Example:
+    // We move downwards to an intersection, the top 'bit' will be unset.
+    // d(0010) -> i(1111) = 0111
+    void disablePrevDirection(const uint8_t &old, uint8_t &cur) {
+        if (old > 7) {
+            cur &= 0xFD;
+        } else if (old > 3) {
+            cur &= 0xFE;
+        } else if (old > 1) {
+            cur &= 0xF7;
+        } else if (old > 0) {
+            cur &= 0xFB;
         }
     }
 
     // Check pixel connectivity.
-    uint8_t checkPixelConnectivity(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        uint8_t edges = 0;
+    void checkPixelConnectivity(const bool &top, const bool &right, const bool &bottom, const bool &left) {
         if (top) {
-            ++edges;
+            new_dir |= 0x08;
         }
         if (right) {
-            ++edges;
+            new_dir |= 0x04;
         }
         if (bottom) {
-            ++edges;
+            new_dir |= 0x02;
         }
         if (left) {
-            ++edges;
+            new_dir |= 0x01;
         }
 
-        moveGridPos(top, right, bottom, left);
+        uint8_t edges = countSetBits(new_dir);
+        disablePrevDirection(prev_dir, new_dir);
 
         // Order of if statements should be optimized.
         if (edges == 1) { // End
@@ -79,75 +92,75 @@ class mapToGraphConverter {
         } else if (edges == 4) { // Intersection
             hwlib::cout << "o";
             ++nodeIndex;
-        } else {
+        } else { // Alone
             hwlib::cout << "x";
-        } // Alone
-
-        return edges;
+        }
     }
 
   public:
-    mapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0} {
+    mapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, prev_dir{0xFF}, new_dir{0} {
     }
 
     mapToGraphConverter(T &grid, Pathfinding::pathfindingWrap &pf, const uint8_t &startY, const uint8_t &startX)
-        : pf{pf}, nodeIndex{0} {
+        : pf{pf}, nodeIndex{0}, prev_dir{0xFF}, new_dir{0} {
         convert(grid, startY, startX);
     }
 
-    // Only works for boolean matrices for now. Should be made compatible with binary matrices at a later date.
     Pathfinding::Graph convert(T &grid, const uint8_t &startY, const uint8_t &startX) {
         uint8_t colLen = grid.size();
         uint8_t rowLen = grid[0].size();
 
-        uint8_t numEdges = 0;
-
         // Turn grid[startY][startX] into a node before conversion.
+        new_dir = 0x02;
+        prev_dir = 0x02;
 
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
                 // If not on the boundaries.
                 if (((y > 0) & (x > 0)) && ((y < (colLen - 1)) & (x < (rowLen - 1)))) {
-                    numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
+                    checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                 } else if (y == 0) { // Horizontal top boundary.
                     if (x == 0) {    // Top left corner.
-                        numEdges = checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], 0);
+                        checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], 0);
                     } else if (x == (rowLen - 1)) { // Top right corner.
-                        numEdges = checkPixelConnectivity(0, 0, grid[y + 1][x], grid[y][x - 1]);
+                        checkPixelConnectivity(0, 0, grid[y + 1][x], grid[y][x - 1]);
                     } else {
-                        numEdges = checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
+                        checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                     }
                 } else if (y == (colLen - 1)) { // Horizontal bottom boundary.
                     if (x == 0) {               // Bottom left corner.
-                        numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, 0);
+                        checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, 0);
                     } else if (x == (rowLen - 1)) { // Bottom right corner.
-                        numEdges = checkPixelConnectivity(grid[y - 1][x], 0, 0, grid[y][x - 1]);
+                        checkPixelConnectivity(grid[y - 1][x], 0, 0, grid[y][x - 1]);
                     } else {
-                        numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, grid[y][x - 1]);
+                        checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, grid[y][x - 1]);
                     }
                 } else if (x == 0) { // Vertical left boundary.
-                    numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], 0);
+                    checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], 0);
                 } else if (x == (rowLen - 1)) { // Vertical right boundary.
-                    numEdges = checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
+                    checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
-                if (numEdges > 0) {
-                    if (dir == Direction::UP) {
+                if (new_dir > 0) {
+                    if (new_dir == 0x08) {
                         hwlib::cout << " up\n";
                         --y;
-                    } else if (dir == Direction::RIGHT) {
+                    } else if (new_dir == 0x04) {
                         hwlib::cout << " right\n";
                         ++x;
-                    } else if (dir == Direction::DOWN) {
+                    } else if (new_dir == 0x02) {
                         hwlib::cout << " down\n";
                         ++y;
-                    } else {
+                    } else if (new_dir) {
                         hwlib::cout << " left\n";
                         --x;
                     }
 
-                    numEdges = 0;
+                    prev_dir = new_dir;
+                    new_dir = 0;
                 } else {
+                    hwlib::cout << " end\n";
+
                     // Terminate both loops.
                     y = colLen;
                     x = rowLen;
