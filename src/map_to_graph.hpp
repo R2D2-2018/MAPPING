@@ -9,21 +9,37 @@
 #define MAP_TO_GRAPH_HPP
 
 #include "Pathfinding_mock/pathfinding.hpp"
+#include "stack.hpp"
 #include "wrap-hwlib.hpp"
 #include <array>
 
 namespace Mapping {
 
+struct tempNode {
+    uint8_t pos[2];
+    uint8_t prev_dir;
+    uint8_t new_dir;
+
+    tempNode() : pos{0, 0}, prev_dir{0}, new_dir{0} {
+    }
+
+    tempNode(const uint8_t &posY, const uint8_t &posX, const uint8_t &prev, const uint8_t &cur)
+        : pos{posY, posX}, prev_dir{prev}, new_dir{cur} {
+    }
+};
+
 template <typename T>
 class mapToGraphConverter {
   private:
     Pathfinding::pathfindingWrap &pf;
+    Stack<tempNode, 10> stack; // Stack is used to return to branches/intersections after a direction has been completed.
+    std::array<std::array<uint8_t, 2>, 10> nodeMem; // Remembers certain nodes to avoid infinite loops.
 
     uint8_t nodeIndex;
 
     // Creates a byte to store the directions.
     // The 4 LSB are the current unvisited edges.
-    // Top: 1000, right: 0100, bottom: 0010, left: 0001.
+    // Up: 1000, right: 0100, down: 0010, left: 0001.
     // If new_dir == 0 the node has been processed.
     uint8_t prev_dir;
     uint8_t new_dir;
@@ -55,15 +71,30 @@ class mapToGraphConverter {
         }
     }
 
+    // Checks whether an element is in the nodeMem matrix.
+    bool checkNodeMem(const uint8_t &y, const uint8_t &x) {
+        bool infinite = false;
+        for (uint8_t i = 0; i < nodeMem.size(); ++i) {
+            if (nodeMem[i][0] == y) {
+                for (uint8_t j = 0; j < nodeMem[i].size(); ++j) {
+                    if (nodeMem[j][1] == x) {
+                        infinite = true;
+                    }
+                }
+            }
+        }
+        return infinite;
+    }
+
     // Check pixel connectivity.
-    void checkPixelConnectivity(const bool &top, const bool &right, const bool &bottom, const bool &left) {
-        if (top) {
+    void checkPixelConnectivity(const bool &up, const bool &right, const bool &down, const bool &left) {
+        if (up) {
             new_dir |= 0x08;
         }
         if (right) {
             new_dir |= 0x04;
         }
-        if (bottom) {
+        if (down) {
             new_dir |= 0x02;
         }
         if (left) {
@@ -78,7 +109,7 @@ class mapToGraphConverter {
             hwlib::cout << "o";
             ++nodeIndex;
         } else if (edges == 2) { // Corner or line
-            if (top & bottom) {  // Vertical line
+            if (up & down) {     // Vertical line
                 hwlib::cout << "|";
             } else if (right & left) { // Horizontal line
                 hwlib::cout << "-";
