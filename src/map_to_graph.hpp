@@ -15,6 +15,9 @@
 
 namespace Mapping {
 
+/**
+ * @brief A struct for holding temporary information that will be stored in the stack.
+ */
 struct tempNode {
     uint8_t pos[2];
     uint8_t new_dir;
@@ -30,9 +33,13 @@ template <typename T>
 class MapToGraphConverter {
   private:
     Pathfinding::pathfindingWrap &pf;
-    Stack<tempNode, 10> stack; // Stack is used to return to branches/intersections after a direction has been completed.
-    std::array<std::array<uint8_t, 2>, 10> nodeMem; // Remembers certain nodes to avoid infinite loops.
     uint8_t nodeIndex;
+
+    // Used to 'remember' branches and intersections till they're fully processed.
+    Stack<tempNode, 10> stack;
+
+    // Remembers certain nodes to avoid infinite loops.
+    std::array<std::array<uint8_t, 2>, 10> nodeMem;
     uint8_t nodeMemIndex;
 
     // Creates a byte to store the directions.
@@ -42,21 +49,34 @@ class MapToGraphConverter {
     uint8_t prev_dir;
     uint8_t new_dir;
 
-    // Hamming weight, Naive algorithm for counting the set bits.
-    // Stops when the digit is 0, should always be <= 4 loops when used to count number of directions.
-    uint8_t countSetBits(uint8_t dir) {
+    /**
+     * @brief Function for counting set bits.
+     *
+     * This function uses the Naive algorithm to count set bits. Stops when the byte is 0, should always be <= 4 loops when used to
+     count the number of directions.
+     *
+     * @param[in]   byte    the byte containing the bits.
+     * @return The amount of set bits.
+     */
+    uint8_t countSetBits(uint8_t byte) {
         uint8_t count = 0;
-        while (dir) {
-            count += (dir & 1);
-            dir >>= 1;
+        while (byte) {
+            count += (byte & 1);
+            byte >>= 1;
         }
         return count;
     }
 
-    // Prevents going back.
-    // Example:
-    // We move downwards to an intersection, the top 'bit' will be unset.
-    // d(0010) -> i(1111) = 0111
+    /**
+     * @brief Function used to prevent the algorithm from going back from where it came.
+     *
+     * This function unsets a certain bit depending on the 'old' parameter. For example:
+     * We move downwards to an intersection, the top 'bit' will be unset.
+     * d(0010) -> i(1111) = 0111
+     *
+     * @param[in]   old    the old value used to unset a certain bit.
+     * @param[out]  cur    the new value where the bit is set to 0.
+     */
     void disablePrevDirection(const uint8_t &old, uint8_t &cur) {
         if (old > 7) {
             cur &= 0xFD;
@@ -69,7 +89,16 @@ class MapToGraphConverter {
         }
     }
 
-    // Checks whether an element is in the nodeMem matrix.
+    /**
+     * @brief Checks whether an element is in the nodeMem matrix.
+     *
+     * This function checks if important nodes are in the nodeMem matrix.
+     * This is required to avoid infinite loops.
+     *
+     * @param[in]   y    The y coordinate to be checked.
+     * @param[in]  x    The x coordinate to be checked.
+     * @return returns true if the item is present in the matrix.
+     */
     bool checkNodeMem(const uint8_t &y, const uint8_t &x) {
         bool infinite = false;
         for (uint8_t i = 0; i < nodeMem.size(); ++i) {
@@ -84,7 +113,17 @@ class MapToGraphConverter {
         return infinite;
     }
 
-    // Check pixel connectivity.
+    /**
+     * @brief Checks whether a pixel has edges.
+     *
+     * This function checks for 'true' values in a 4-connected neighborhood.
+     *
+     * @param[in]   up      The value stored in the index above it.
+     * @param[in]   right   The value stored in the index on the right of it.
+     * @param[in]   down    The value stored in the index below it.
+     * @param[in]   left    The value stored in the index on the left of it.
+     * @return returns the number of detected edges.
+     */
     uint8_t checkPixelConnectivity(const bool &up, const bool &right, const bool &down, const bool &left) {
         uint8_t numEdges = 0;
         if (up) {
@@ -115,7 +154,16 @@ class MapToGraphConverter {
         convert(grid, startY, startX);
     }
 
-    void convert(T &grid, const uint8_t &startY, const uint8_t &startX) {
+    /**
+     * @brief The main function that creates the nodes and calls the correct functions.
+     *
+     * This function turns a boolean/bindary matrix into a graph.
+     *
+     * @param[in]   grid        The grid that will be converted.
+     * @param[in]   startY      The Y coordinate starting position.
+     * @param[in]   startX      The x coordinate starting position.
+     */
+    void convert(const T &grid, const uint8_t &startY, const uint8_t &startX) {
         uint8_t colLen = grid.size();
         uint8_t rowLen = grid[0].size();
 
@@ -125,7 +173,7 @@ class MapToGraphConverter {
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
 
-                // If not on the boundaries.
+                //< Checks if the index is within the boundaries to avoid undefined behaviour.
                 if (((y > 0) & (x > 0)) && ((y < (colLen - 1)) & (x < (rowLen - 1)))) {
                     checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                 } else if (y == 0) { // Horizontal top boundary.
@@ -150,13 +198,14 @@ class MapToGraphConverter {
                     checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
+                //< Checks for important nodes to store them.
                 if ((numEdges > 2) || (startY == y && startX == x)) {
                     if (!checkNodeMem(y, x)) {
                         nodeMem[nodeMemIndex++] = {y, x};
                         disablePrevDirection(prev_dir, new_dir);
                         temp_dir = new_dir;
 
-                        // Disables one bit before moving in that direction.
+                        ///< Disables one bit before moving in that direction.
                         if (new_dir > 7) {
                             temp_dir &= 0xF7;
                         } else if (new_dir > 3) {
@@ -179,6 +228,7 @@ class MapToGraphConverter {
                     disablePrevDirection(prev_dir, new_dir);
                 }
 
+                //< Checks whether a direction has finished or an important node has been processed.
                 if (countSetBits(new_dir) == 0) {
                     if (!stack.isEmpty()) {
                         tn = stack.peek();
@@ -206,6 +256,7 @@ class MapToGraphConverter {
                     }
                 }
 
+                ///< Changes the index depending on the bits stores in the new_dir byte.
                 if (new_dir > 0) {
                     if (new_dir > 7) {
                         --y;

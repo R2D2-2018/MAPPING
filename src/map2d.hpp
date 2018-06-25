@@ -111,22 +111,6 @@ class Map2D {
     }
 
     /**
-     * @brief Gets the map as a Graph
-     *
-     * This function returns the created map as a
-     * Pathfinding::Graph.
-     * This is a dummy implementation, that returns
-     * an empty graph. The Graph data type is being
-     * currently further developed by the team
-     * responisble for pathfinding.
-     *
-     * @return [out] - the map as a graph
-     */
-    /*Pathfinding::Graph getGraph() {
-        return Pathfinding::Graph();
-    }*/
-
-    /**
      * @brief Sets the position of the sensor.
      *
      * This function sets the position of the
