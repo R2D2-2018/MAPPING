@@ -173,7 +173,7 @@ class MapToGraphConverter {
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
 
-                //< Checks if the index is within the boundaries to avoid undefined behaviour.
+                ///< Checks if the index is within the boundaries to avoid undefined behaviour.
                 if (((y > 0) & (x > 0)) && ((y < (colLen - 1)) & (x < (rowLen - 1)))) {
                     checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                 } else if (y == 0) { // Horizontal top boundary.
@@ -198,7 +198,7 @@ class MapToGraphConverter {
                     checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
-                //< Checks for important nodes to store them.
+                ///< Checks for important nodes to store them.
                 if ((numEdges > 2) || (startY == y && startX == x)) {
                     if (!checkNodeMem(y, x)) {
                         nodeMem[nodeMemIndex++] = {y, x};
@@ -228,7 +228,7 @@ class MapToGraphConverter {
                     disablePrevDirection(prev_dir, new_dir);
                 }
 
-                //< Checks whether a direction has finished or an important node has been processed.
+                ///< Checks whether a direction has finished or an important node has been processed.
                 if (countSetBits(new_dir) == 0) {
                     if (!stack.isEmpty()) {
                         tn = stack.peek();
@@ -241,7 +241,7 @@ class MapToGraphConverter {
                         } else {
                             temp_dir = new_dir;
 
-                            // Disables one bit before moving in that direction.
+                            ///< Disables one bit before moving in that direction. Prevents moving back to the same direction.
                             if (new_dir > 7) {
                                 temp_dir &= 0xF7;
                             } else if (new_dir > 3) {
