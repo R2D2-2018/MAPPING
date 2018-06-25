@@ -13,7 +13,7 @@ int main() {
     // Temporarily fixes the problem with the object_pool described below.
     Pathfinding::pathfindingWrap pf;
 
-    Mapping::mapToGraphConverter<std::array<std::array<bool, 5>, 5>> conv(pf);
+    Mapping::MapToGraphConverter<std::array<std::array<bool, 5>, 5>> conv(pf);
     conv.convert(grid, 0, 0);
 
     /*

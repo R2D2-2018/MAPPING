@@ -47,6 +47,22 @@ class Stack {
         }
     }
 
+    T peek() {
+        if (size() > 0) {
+            return *(index - 1);
+        } else {
+            return a[0];
+        }
+    }
+
+    T &peekRef() {
+        if (size() > 0) {
+            return *(index - 1);
+        } else {
+            return a[0];
+        }
+    }
+
     T pop() {
         if (size() > 0) {
             return *(--index);
@@ -55,7 +71,7 @@ class Stack {
         }
     }
 
-    // Caution, object can be overridden when another element is pushed.
+    // Caution, object can be overwritten when another element is pushed.
     T &popRef() {
         if (size() > 0) {
             return *(--index);

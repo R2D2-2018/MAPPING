@@ -17,19 +17,17 @@ namespace Mapping {
 
 struct tempNode {
     uint8_t pos[2];
-    uint8_t prev_dir;
     uint8_t new_dir;
 
-    tempNode() : pos{0, 0}, prev_dir{0}, new_dir{0} {
+    tempNode() : pos{0, 0}, new_dir{0} {
     }
 
-    tempNode(const uint8_t &posY, const uint8_t &posX, const uint8_t &prev, const uint8_t &cur)
-        : pos{posY, posX}, prev_dir{prev}, new_dir{cur} {
+    tempNode(const uint8_t &posY, const uint8_t &posX, const uint8_t &cur) : pos{posY, posX}, new_dir{cur} {
     }
 };
 
 template <typename T>
-class mapToGraphConverter {
+class MapToGraphConverter {
   private:
     Pathfinding::pathfindingWrap &pf;
     Stack<tempNode, 10> stack; // Stack is used to return to branches/intersections after a direction has been completed.
@@ -87,62 +85,43 @@ class mapToGraphConverter {
     }
 
     // Check pixel connectivity.
-    void checkPixelConnectivity(const bool &up, const bool &right, const bool &down, const bool &left) {
+    uint8_t checkPixelConnectivity(const bool &up, const bool &right, const bool &down, const bool &left) {
+        uint8_t numEdges = 0;
         if (up) {
             new_dir |= 0x08;
+            ++numEdges;
         }
         if (right) {
             new_dir |= 0x04;
+            ++numEdges;
         }
         if (down) {
             new_dir |= 0x02;
+            ++numEdges;
         }
         if (left) {
             new_dir |= 0x01;
+            ++numEdges;
         }
-
-        /*
-        uint8_t edges = countSetBits(new_dir);
-
-        // Order of if statements should be optimized.
-        if (edges == 1) { // End
-            hwlib::cout << "o";
-            ++nodeIndex;
-        } else if (edges == 2) { // Corner or line
-            if (up & down) {     // Vertical line
-                hwlib::cout << "|";
-            } else if (right & left) { // Horizontal line
-                hwlib::cout << "-";
-            } else { // Corner
-                hwlib::cout << "o";
-                ++nodeIndex;
-            }
-        } else if (edges == 3) { // Branch
-            hwlib::cout << "o";
-            ++nodeIndex;
-        } else if (edges == 4) { // Intersection
-            hwlib::cout << "o";
-            ++nodeIndex;
-        } else { // Alone
-            hwlib::cout << "x";
-        }*/
+        return numEdges;
     }
 
   public:
-    mapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0xFF}, new_dir{0} {
+    MapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0}, new_dir{0} {
     }
 
-    mapToGraphConverter(T &grid, Pathfinding::pathfindingWrap &pf, const uint8_t &startY, const uint8_t &startX)
-        : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0xFF}, new_dir{0} {
+    MapToGraphConverter(const T &grid, Pathfinding::pathfindingWrap &pf, const uint8_t &startY, const uint8_t &startX)
+        : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0}, new_dir{0} {
         convert(grid, startY, startX);
     }
 
-    Pathfinding::Graph convert(T &grid, const uint8_t &startY, const uint8_t &startX) {
+    void convert(T &grid, const uint8_t &startY, const uint8_t &startX) {
         uint8_t colLen = grid.size();
         uint8_t rowLen = grid[0].size();
 
-        // Turn grid[startY][startX] into a node before conversion.
-
+        uint8_t numEdges = 0;
+        tempNode tn;
+        uint8_t temp_dir;
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
 
@@ -171,46 +150,83 @@ class mapToGraphConverter {
                     checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
-                if ((countSetBits(new_dir) > 2) || (startY == y && startX == x)) {
-                    if (checkNodeMem(y, x)) {
-                        if (stack.isEmpty()) {
-                            y = colLen;
-                            break;
+                if ((numEdges > 2) || (startY == y && startX == x)) {
+                    if (!checkNodeMem(y, x)) {
+                        nodeMem[nodeMemIndex++] = {y, x};
+                        disablePrevDirection(prev_dir, new_dir);
+                        temp_dir = new_dir;
+
+                        // Disables one bit before moving in that direction.
+                        if (new_dir > 7) {
+                            temp_dir &= 0xF7;
+                        } else if (new_dir > 3) {
+                            temp_dir &= 0xFB;
+                        } else if (new_dir > 1) {
+                            temp_dir &= 0xFD;
+                        } else {
+                            temp_dir &= 0xFE;
                         }
-                    } else if (startY == y && startX == x) {
-                        nodeMem[nodeMemIndex] = {startY, startX};
+
+                        stack.push(tempNode(y, x, temp_dir));
+                    } else {
+                        if (checkNodeMem(y, x)) {
+                            tn = stack.pop();
+                            new_dir = tn.new_dir;
+                        }
+                        disablePrevDirection(prev_dir, new_dir);
                     }
                 } else {
                     disablePrevDirection(prev_dir, new_dir);
                 }
 
+                if (countSetBits(new_dir) == 0) {
+                    if (!stack.isEmpty()) {
+                        tn = stack.peek();
+                        y = tn.pos[0];
+                        x = tn.pos[1];
+                        new_dir = tn.new_dir;
+
+                        if (countSetBits(tn.new_dir) < 2) {
+                            stack.pop();
+                        } else {
+                            temp_dir = new_dir;
+
+                            // Disables one bit before moving in that direction.
+                            if (new_dir > 7) {
+                                temp_dir &= 0xF7;
+                            } else if (new_dir > 3) {
+                                temp_dir &= 0xFB;
+                            } else if (new_dir > 1) {
+                                temp_dir &= 0xFD;
+                            } else {
+                                temp_dir &= 0xFE;
+                            }
+                            stack.peekRef().new_dir = temp_dir;
+                        }
+                    }
+                }
+
                 if (new_dir > 0) {
                     if (new_dir > 7) {
-                        hwlib::cout << " up\n";
                         --y;
                     } else if (new_dir > 3) {
-                        hwlib::cout << " right\n";
                         ++x;
                     } else if (new_dir > 1) {
-                        hwlib::cout << " down\n";
                         ++y;
                     } else {
-                        hwlib::cout << " left\n";
                         --x;
                     }
 
                     prev_dir = new_dir;
                     new_dir = 0;
-                } else { // Node processed or end.
-                    // Terminate both loops.
-                    y = colLen;
-                    break;
+                } else {
+                    if (stack.isEmpty()) {
+                        y = colLen;
+                        break;
+                    }
                 }
             }
         }
-
-        hwlib::cout << " end\n";
-        return Pathfinding::Graph();
     }
 };
 
