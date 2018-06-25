@@ -34,8 +34,8 @@ class mapToGraphConverter {
     Pathfinding::pathfindingWrap &pf;
     Stack<tempNode, 10> stack; // Stack is used to return to branches/intersections after a direction has been completed.
     std::array<std::array<uint8_t, 2>, 10> nodeMem; // Remembers certain nodes to avoid infinite loops.
-
     uint8_t nodeIndex;
+    uint8_t nodeMemIndex;
 
     // Creates a byte to store the directions.
     // The 4 LSB are the current unvisited edges.
@@ -101,8 +101,8 @@ class mapToGraphConverter {
             new_dir |= 0x01;
         }
 
+        /*
         uint8_t edges = countSetBits(new_dir);
-        disablePrevDirection(prev_dir, new_dir);
 
         // Order of if statements should be optimized.
         if (edges == 1) { // End
@@ -125,15 +125,15 @@ class mapToGraphConverter {
             ++nodeIndex;
         } else { // Alone
             hwlib::cout << "x";
-        }
+        }*/
     }
 
   public:
-    mapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, prev_dir{0xFF}, new_dir{0} {
+    mapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0xFF}, new_dir{0} {
     }
 
     mapToGraphConverter(T &grid, Pathfinding::pathfindingWrap &pf, const uint8_t &startY, const uint8_t &startX)
-        : pf{pf}, nodeIndex{0}, prev_dir{0xFF}, new_dir{0} {
+        : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0xFF}, new_dir{0} {
         convert(grid, startY, startX);
     }
 
@@ -142,11 +142,10 @@ class mapToGraphConverter {
         uint8_t rowLen = grid[0].size();
 
         // Turn grid[startY][startX] into a node before conversion.
-        new_dir = 0x02;
-        prev_dir = 0x02;
 
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
+
                 // If not on the boundaries.
                 if (((y > 0) & (x > 0)) && ((y < (colLen - 1)) & (x < (rowLen - 1)))) {
                     checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
@@ -172,33 +171,45 @@ class mapToGraphConverter {
                     checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
+                if ((countSetBits(new_dir) > 2) || (startY == y && startX == x)) {
+                    if (checkNodeMem(y, x)) {
+                        if (stack.isEmpty()) {
+                            y = colLen;
+                            break;
+                        }
+                    } else if (startY == y && startX == x) {
+                        nodeMem[nodeMemIndex] = {startY, startX};
+                    }
+                } else {
+                    disablePrevDirection(prev_dir, new_dir);
+                }
+
                 if (new_dir > 0) {
-                    if (new_dir == 0x08) {
+                    if (new_dir > 7) {
                         hwlib::cout << " up\n";
                         --y;
-                    } else if (new_dir == 0x04) {
+                    } else if (new_dir > 3) {
                         hwlib::cout << " right\n";
                         ++x;
-                    } else if (new_dir == 0x02) {
+                    } else if (new_dir > 1) {
                         hwlib::cout << " down\n";
                         ++y;
-                    } else if (new_dir) {
+                    } else {
                         hwlib::cout << " left\n";
                         --x;
                     }
 
                     prev_dir = new_dir;
                     new_dir = 0;
-                } else {
-                    hwlib::cout << " end\n";
-
+                } else { // Node processed or end.
                     // Terminate both loops.
                     y = colLen;
-                    x = rowLen;
+                    break;
                 }
             }
         }
 
+        hwlib::cout << " end\n";
         return Pathfinding::Graph();
     }
 };

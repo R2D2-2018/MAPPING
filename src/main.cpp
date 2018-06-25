@@ -7,24 +7,13 @@ int main() {
 
     hwlib::wait_ms(1000);
 
-    static std::array<std::array<bool, 13>, 13> grid{{{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                                      {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                                                      {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-                                                      {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0},
-                                                      {0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0},
-                                                      {0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0},
-                                                      {0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-                                                      {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                      {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                                                      {0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                      {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                                      {0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-                                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
+    static std::array<std::array<bool, 5>, 5> grid{
+        {{1, 1, 1, 1, 1}, {1, 0, 0, 0, 1}, {1, 0, 0, 0, 1}, {1, 0, 0, 0, 1}, {1, 1, 1, 1, 1}}};
 
     // Temporarily fixes the problem with the object_pool described below.
     Pathfinding::pathfindingWrap pf;
 
-    Mapping::mapToGraphConverter<std::array<std::array<bool, 13>, 13>> conv(pf);
+    Mapping::mapToGraphConverter<std::array<std::array<bool, 5>, 5>> conv(pf);
     conv.convert(grid, 0, 0);
 
     /*
