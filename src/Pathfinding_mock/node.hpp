@@ -11,17 +11,17 @@
 #include <stdint.h>
 
 namespace Pathfinding {
-//< This is a mock class of the Node class used by path finding.
-//< It contains a (dummy) implementations of the methods that are
-//< relevant for this module (mapping) in order to create a new
-//< instance of Pathfinding::Graph. The content of this file is
-//< based on the state of the development branch of PATHFINDING
-//< at 11:56 PM 31/5/2018. When the module gets updated, this
-//< file needs to be cahnged manually.
-//< Unfortunately, the pathfinding module is running on a
-//< different platform currently, so it is not possible to
-//< simply include the file from the pathfinding repo, however
-//< that would be desirable.
+///< This is a mock class of the Node class used by path finding.
+///< It contains a (dummy) implementations of the methods that are
+///< relevant for this module (mapping) in order to create a new
+///< instance of Pathfinding::Graph. The content of this file is
+///< based on the state of the development branch of PATHFINDING
+///< at 11:56 PM 31/5/2018. When the module gets updated, this
+///< file needs to be cahnged manually.
+///< Unfortunately, the pathfinding module is running on a
+///< different platform currently, so it is not possible to
+///< simply include the file from the pathfinding repo, however
+///< that would be desirable.
 class Node {
   public:
     /**
