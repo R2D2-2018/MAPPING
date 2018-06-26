@@ -20,12 +20,14 @@ namespace Mapping {
  */
 struct tempNode {
     uint8_t pos[2];
-    uint8_t new_dir;
+    uint8_t newDir;
+    uint8_t nodeId;
 
-    tempNode() : pos{0, 0}, new_dir{0} {
+    tempNode() : pos{0, 0}, newDir{0}, nodeId{0} {
     }
 
-    tempNode(const uint8_t &posY, const uint8_t &posX, const uint8_t &cur) : pos{posY, posX}, new_dir{cur} {
+    tempNode(const uint8_t &posY, const uint8_t &posX, const uint8_t &newDir, const uint8_t &nodeId)
+        : pos{posY, posX}, newDir{newDir}, nodeId{nodeId} {
     }
 };
 
@@ -45,9 +47,9 @@ class MapToGraphConverter {
     // Creates a byte to store the directions.
     // The 4 LSB are the current unvisited edges.
     // Up: 1000, right: 0100, down: 0010, left: 0001.
-    // If new_dir == 0 the node has been processed.
-    uint8_t prev_dir;
-    uint8_t new_dir;
+    // If newDir == 0 the node has been processed.
+    uint8_t prevDir;
+    uint8_t newDir;
 
     /**
      * @brief Function for counting set bits.
@@ -95,22 +97,21 @@ class MapToGraphConverter {
      * This function checks if important nodes are in the nodeMem matrix.
      * This is required to avoid infinite loops.
      *
-     * @param[in]   y    The y coordinate to be checked.
+     * @param[in]  y    The y coordinate to be checked.
      * @param[in]  x    The x coordinate to be checked.
      * @return returns true if the item is present in the matrix.
      */
     bool checkNodeMem(const uint8_t &y, const uint8_t &x) {
-        bool infinite = false;
         for (uint8_t i = 0; i < nodeMem.size(); ++i) {
             if (nodeMem[i][0] == y) {
                 for (uint8_t j = 0; j < nodeMem[i].size(); ++j) {
                     if (nodeMem[j][1] == x) {
-                        infinite = true;
+                        return true;
                     }
                 }
             }
         }
-        return infinite;
+        return false;
     }
 
     /**
@@ -127,30 +128,31 @@ class MapToGraphConverter {
     uint8_t checkPixelConnectivity(const bool &up, const bool &right, const bool &down, const bool &left) {
         uint8_t numEdges = 0;
         if (up) {
-            new_dir |= 0x08;
+            newDir |= 0x08;
             ++numEdges;
         }
         if (right) {
-            new_dir |= 0x04;
+            newDir |= 0x04;
             ++numEdges;
         }
         if (down) {
-            new_dir |= 0x02;
+            newDir |= 0x02;
             ++numEdges;
         }
         if (left) {
-            new_dir |= 0x01;
+            newDir |= 0x01;
             ++numEdges;
         }
+
         return numEdges;
     }
 
   public:
-    MapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0}, new_dir{0} {
+    MapToGraphConverter(Pathfinding::pathfindingWrap &pf) : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prevDir{0}, newDir{0} {
     }
 
     MapToGraphConverter(const T &grid, Pathfinding::pathfindingWrap &pf, const uint8_t &startY, const uint8_t &startX)
-        : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prev_dir{0}, new_dir{0} {
+        : pf{pf}, nodeIndex{0}, nodeMemIndex{0}, prevDir{0}, newDir{0} {
         convert(grid, startY, startX);
     }
 
@@ -167,109 +169,131 @@ class MapToGraphConverter {
         uint8_t colLen = grid.size();
         uint8_t rowLen = grid[0].size();
 
+        // Add the initial node.
+        pf.addNode(nodeIndex++);
+
         uint8_t numEdges = 0;
         tempNode tn;
-        uint8_t temp_dir;
+        uint8_t tempDir;
         for (uint8_t y = startY; y < colLen;) {
             for (uint8_t x = startX; x < rowLen;) {
 
+                hwlib::cout << "( " << +y << ", " << +x << " )\n";
+
                 ///< Checks if the index is within the boundaries to avoid undefined behaviour.
                 if (((y > 0) & (x > 0)) && ((y < (colLen - 1)) & (x < (rowLen - 1)))) {
-                    checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
+                    numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                 } else if (y == 0) { // Horizontal top boundary.
                     if (x == 0) {    // Top left corner.
-                        checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], 0);
+                        numEdges = checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], 0);
                     } else if (x == (rowLen - 1)) { // Top right corner.
-                        checkPixelConnectivity(0, 0, grid[y + 1][x], grid[y][x - 1]);
+                        numEdges = checkPixelConnectivity(0, 0, grid[y + 1][x], grid[y][x - 1]);
                     } else {
-                        checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
+                        numEdges = checkPixelConnectivity(0, grid[y][x + 1], grid[y + 1][x], grid[y][x - 1]);
                     }
                 } else if (y == (colLen - 1)) { // Horizontal bottom boundary.
                     if (x == 0) {               // Bottom left corner.
-                        checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, 0);
+                        numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, 0);
                     } else if (x == (rowLen - 1)) { // Bottom right corner.
-                        checkPixelConnectivity(grid[y - 1][x], 0, 0, grid[y][x - 1]);
+                        numEdges = checkPixelConnectivity(grid[y - 1][x], 0, 0, grid[y][x - 1]);
                     } else {
-                        checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, grid[y][x - 1]);
+                        numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], 0, grid[y][x - 1]);
                     }
                 } else if (x == 0) { // Vertical left boundary.
-                    checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], 0);
+                    numEdges = checkPixelConnectivity(grid[y - 1][x], grid[y][x + 1], grid[y + 1][x], 0);
                 } else if (x == (rowLen - 1)) { // Vertical right boundary.
-                    checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
+                    numEdges = checkPixelConnectivity(grid[y - 1][x], 0, grid[y + 1][x], grid[y][x - 1]);
                 }
 
                 ///< Checks for important nodes to store them.
                 if ((numEdges > 2) || (startY == y && startX == x)) {
                     if (!checkNodeMem(y, x)) {
                         nodeMem[nodeMemIndex++] = {y, x};
-                        disablePrevDirection(prev_dir, new_dir);
-                        temp_dir = new_dir;
+                        disablePrevDirection(prevDir, newDir);
+                        tempDir = newDir;
 
-                        ///< Disables one bit before moving in that direction.
-                        if (new_dir > 7) {
-                            temp_dir &= 0xF7;
-                        } else if (new_dir > 3) {
-                            temp_dir &= 0xFB;
-                        } else if (new_dir > 1) {
-                            temp_dir &= 0xFD;
+                        ///< Unsets a bit to prepare the pushed tempNode.
+                        if (newDir > 7) {
+                            tempDir &= 0xF7;
+                        } else if (newDir > 3) {
+                            tempDir &= 0xFB;
+                        } else if (newDir > 1) {
+                            tempDir &= 0xFD;
                         } else {
-                            temp_dir &= 0xFE;
+                            tempDir &= 0xFE;
                         }
 
-                        stack.push(tempNode(y, x, temp_dir));
+                        ///< Pushes a tempNode so it can later be returned to.
+                        stack.push(tempNode(y, x, tempDir, nodeIndex));
+
+                        if (!(startY == y && startX == x)) {
+                            pf.addNode(nodeIndex++); // Add a node.
+                        }
                     } else {
                         if (checkNodeMem(y, x)) {
                             tn = stack.pop();
-                            new_dir = tn.new_dir;
+                            newDir = tn.newDir;
                         }
-                        disablePrevDirection(prev_dir, new_dir);
+                        disablePrevDirection(prevDir, newDir);
                     }
                 } else {
-                    disablePrevDirection(prev_dir, new_dir);
+                    if (numEdges == 2) {
+                        //< Corner, lines are skipped.
+                        if (!((grid[y - 1][x] & grid[y + 1][x]) || (grid[y][x - 1] & grid[y][x + 1]))) {
+                            pf.addNode(nodeIndex++); // Add a node.
+                        }
+                    } else {
+                        pf.addNode(nodeIndex++); // Add a node.
+                    }
+
+                    disablePrevDirection(prevDir, newDir);
                 }
 
-                ///< Checks whether a direction has finished or an important node has been processed.
-                if (countSetBits(new_dir) == 0) {
+                ///< Checks whether a direction has finished.
+                if (countSetBits(newDir) == 0) {
                     if (!stack.isEmpty()) {
                         tn = stack.peek();
                         y = tn.pos[0];
                         x = tn.pos[1];
-                        new_dir = tn.new_dir;
+                        newDir = tn.newDir;
 
-                        if (countSetBits(tn.new_dir) < 2) {
+                        ///< If node is fully processed.
+                        if (countSetBits(newDir) < 2) {
                             stack.pop();
                         } else {
-                            temp_dir = new_dir;
+                            //</ Edit the current node since it's not fully processed yet.
+                            tempDir = newDir;
 
-                            ///< Disables one bit before moving in that direction. Prevents moving back to the same direction.
-                            if (new_dir > 7) {
-                                temp_dir &= 0xF7;
-                            } else if (new_dir > 3) {
-                                temp_dir &= 0xFB;
-                            } else if (new_dir > 1) {
-                                temp_dir &= 0xFD;
+                            ///< Unsets a bit to prepare the pushed tempNode.
+                            if (newDir > 7) {
+                                tempDir &= 0xF7;
+                            } else if (newDir > 3) {
+                                tempDir &= 0xFB;
+                            } else if (newDir > 1) {
+                                tempDir &= 0xFD;
                             } else {
-                                temp_dir &= 0xFE;
+                                tempDir &= 0xFE;
                             }
-                            stack.peekRef().new_dir = temp_dir;
+
+                            // Sets the new value to update the tempNode.
+                            stack.peekRef().newDir = tempDir;
                         }
                     }
                 }
 
-                ///< Changes the index depending on the bits stores in the new_dir byte.
-                if (new_dir > 0) {
-                    if (new_dir > 7) {
+                ///< Changes the index depending on the bits stored in the newDir byte.
+                if (newDir > 0) {
+                    if (newDir > 7) {
                         --y;
-                    } else if (new_dir > 3) {
+                    } else if (newDir > 3) {
                         ++x;
-                    } else if (new_dir > 1) {
+                    } else if (newDir > 1) {
                         ++y;
                     } else {
                         --x;
                     }
-
-                    prev_dir = new_dir;
-                    new_dir = 0;
+                    prevDir = newDir;
+                    newDir = 0;
                 } else {
                     if (stack.isEmpty()) {
                         y = colLen;
