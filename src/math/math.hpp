@@ -113,7 +113,7 @@ float sin(float x);
 
 /**
  * @brief This function will convert a integer to a char array.
- * @details a integer and a char arrray have to be givin to the function. \n
+ * @details an integer and a char arrray have to be givin to the function. \n
  * The function converts the integer to a char array and will fill the given char array with the content
  *
  * @param[in] n
@@ -123,6 +123,9 @@ void intToString(int n, char ch1[]);
 
 /**
  * @brief This function will return the atan of a float
+ * @details This function calculates an approximate atan using constants found in the following library:
+ * @ref
+ * https://github.com/AnalyticalGraphicsInc/cesium/blob/2d527441460a5abbea386957a32bd9adc4e6522c/Source/Shaders/Builtin/Functions/fastApproximateAtan.glsl
  *
  * @param[in] inX
  * @return float
@@ -131,6 +134,8 @@ float atan(float inX);
 
 /**
  * @brief This function will return the acos of a float
+ * @details This function calculates an approximate acos using constants found in the following library (acosFast4):
+ * @ref https://github.com/Temaran/UE4ShaderPluginDemo/pull/9/commits/d58d12f2475728e49c849a2fbb99985a59bbddd9
  *
  * @param[in] inX
  * @return float
