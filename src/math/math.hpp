@@ -59,6 +59,9 @@ float abs(float v);
  *
  * @param[in] x The value of which we will calculate the square root.
  * @return float The square-rooted value from the parameter.
+ *
+ * @param x
+ * @return float
  */
 float sqrt(const float x);
 
@@ -104,6 +107,7 @@ float cos(float x);
 
 /**
  * @brief Modified Taylor series sin alghorithm
+
  * @details This is a modified algortihm made by a Professor in MIT. Unfortunately his name is unknown.
  *
  * @param[in] x
