@@ -89,7 +89,7 @@ float sin(float x) {
     return sum;
 }
 
-void int_to_string(int n, char ch1[]) {
+void intToString(int n, char ch1[]) {
     char buffer[5];
     int i = 0;
 
