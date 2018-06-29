@@ -8,10 +8,12 @@
 #ifndef MAP2D_HPP
 #define MAP2D_HPP
 
+#include "Pathfinding_mock/graph.hpp"
 #include "angle.hpp"
+#include "math/math.hpp"
+#include "math/round.hpp"
 #include "vector2d.hpp"
 #include <array>
-#include <math.h>
 
 namespace Mapping {
 /**
@@ -44,8 +46,65 @@ template <int X, int Y>
 class Map2D {
   private:
     double scale;
+    Angle sensorAngle;
     std::array<std::array<bool, X>, Y> grid;
     Vector2D sensorPosition;
+
+    /**
+     * @brief Sets the point as impassable.
+     *
+     * This function sets the given relative point as
+     * impassable.
+     *
+     * @param [in] angle: The angle in which in the direction
+     * of the to bet set point. Angle 0 is pointing downwards, and
+     * grows counterclockwise.
+     *
+     *  @param [in] distance: The distance of the point to the
+     *
+     * NOTE: This value is given in cm, not in grid points!
+     */
+    void setRelativePointAsImpassable(Angle angle, double distance) {
+        auto pointPosition = calculateRelativePosition(angle, distance);
+        if (pointWithinMap(pointPosition)) {
+            grid[pointPosition.x][pointPosition.y] = true;
+        }
+    }
+
+    /**
+     * @brief returns if the point is in the map.
+     *
+     * This method returns wether or not the point is within the boundaries of the map.
+     *
+     * @param [in] point The point which will be checked if it is on the map, as a Vector2D.
+     *
+     * @return boolean if point is within map.
+     */
+    bool pointWithinMap(const Vector2D &point) const {
+        return (point.x >= 0 && point.x < X && point.y >= 0 && point.y < Y);
+    }
+
+    /**
+     * @brief calculate a position on angle and distance from current position.
+     *
+     * This method calculates an absolute vector from angle and distance and then adds that to the current sensor position.
+     * The new vector is returned.
+     *
+     * @param [in] angle: The angle in which the position
+     * is changed. Angle 0 is pointing downwards, and
+     * grows counterclockwise.
+     *
+     * @param [in] distance: The distance delta
+     * of the sensor in centimeters.
+     * NOTE: This value is given in cm, not in grid points!
+     *
+     * @return a new position from the absolute vector of angle and distance, added to the sensorPosition.
+     */
+    Vector2D calculateRelativePosition(const Angle &angle, const double &distance) const {
+        auto absoluteVector = Vector2D(math::round((math::sin(angle.asRadian()) * distance) / scale),
+                                       math::round((math::cos(angle.asRadian()) * distance) / scale));
+        return sensorPosition + absoluteVector;
+    }
 
   public:
     /**
@@ -65,7 +124,8 @@ class Map2D {
      *
      * @param [in] scale: 1 grid distance = scale * 1 cm
      */
-    Map2D(Vector2D sensorPosition, double scale) : scale(scale), sensorPosition(sensorPosition) {
+    Map2D(Vector2D sensorPosition, Angle sensorAngle, double scale)
+        : scale(scale), sensorAngle(sensorAngle), sensorPosition(sensorPosition) {
         clear();
     }
 
@@ -86,24 +146,43 @@ class Map2D {
     }
 
     /**
+     * @brief Gets the map as a Graph
+     *
+     * This function returns the created map as a
+     * Pathfinding::Graph.
+     * This is a dummy implementation, that returns
+     * an empty graph. The Graph data type is being
+     * currently further developed by the team
+     * responisble for pathfinding.
+     *
+     * @return [out] - the map as a graph
+     */
+    Pathfinding::Graph getGraph() {
+        return Pathfinding::Graph(nullptr, 0, nullptr, 0);
+    }
+
+    /**
      * @brief Sets the position of the sensor.
      *
      * This function sets the position of the
      * sensor to the given absolute location.
      * If you wish to move the sensor with a delta instead,
      * use moveSensorCm()
+     * If the new position is outside of the internal map, the sensor position will remain unchanged.
      *
      * @param [in] newPosition: The new absolute position of the
      * sensor.
      */
     void setSensorPosition(Vector2D newPosition) {
-        sensorPosition = newPosition;
+        if (pointWithinMap(newPosition)) {
+            sensorPosition = newPosition;
+        }
     }
 
     /**
      * @brief Returns the current position of the sensor.
      *
-     * @return [Vector2D] - The current position of the
+     * @return [out] - The current position of the
      * sensor.
      */
     Vector2D getSensorPosition() {
@@ -111,19 +190,18 @@ class Map2D {
     }
 
     /**
-     * @brief Moves the sensor with the given delta.
-     *
-     * @param [in] delta: The change in position
-     * of the sensor.
-     * NOTE: This value is given in cm, not in grid points!
+     * @brief Returns the current rotation of the sensor.
      */
-    void moveSensorCm(Vector2D delta) {
-        auto gridVector = Vector2D(round(delta.x / scale), round(delta.y / scale));
-        sensorPosition += gridVector;
+    Angle getSensorRotation() {
+        return sensorAngle;
     }
 
     /**
      * @brief Moves the sensor with the given delta.
+     *
+     * This method moves the sensor in the angle direction for distance in cm.
+     * If the new Position is not within the boundaries of the map, the sensorPosition remains unchanged and
+     * the rotation of the sensor will also remain unchanged (even if setRotation is true).
      *
      * @param [in] angle: The angle in which the position
      * is changed. Angle 0 is pointing downwards, and
@@ -132,52 +210,59 @@ class Map2D {
      * @param [in] distance: The distance delta
      * of the sensor in centimeters.
      * NOTE: This value is given in cm, not in grid points!
+     *
+     * @param [in] setRotation: If true, de angle will be set
+     * as the angle of the sensor.
      */
-    void moveSensorCm(Angle angle, double distance) {
-        //< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        //< However, if we do something like auto a = sin(distance), then it works
-        //< perfectly fine. This should be fixed somehow.
-
-        // moveSensorCm(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+    void moveSensorCm(Angle angle, double distance, bool setRotation = false) {
+        auto newPosition = calculateRelativePosition(angle, distance);
+        if (pointWithinMap(newPosition)) {
+            sensorPosition = newPosition;
+            if (setRotation) {
+                sensorAngle = angle;
+            }
+        }
     }
 
     /**
-     * @brief Sets the point as impassable.
+     * @brief This function rotates the sensor with
+     * the given angle.
      *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] point: The to the seensor relative point
-     * to be set.
-     *
-     * NOTE: This value is given in cm, not in grid points!
+     * @param [in] delta: The change in rotation.
      */
-    void setRelativePointAsImpassable(const Vector2D &point) {
-        ///< This should be in a try, but the compiler won't let
-        ///< me do that.
-        grid.at(sensorPosition.x + (point.x / scale)).at(sensorPosition.y + (point.y / scale)) = true;
+    void rotateSensor(Angle delta) {
+        sensorAngle += delta;
+    }
+    /**
+     * @brief This function sets the rotation of the sensor
+     * to the given (absolute) value.
+     *
+     * @param [in] angle: The absolut angle of the sensor.
+     */
+    void setSensorRotation(Angle angle) {
+        sensorAngle = angle;
     }
 
     /**
-     * @brief Sets the point as impassable.
+     * @brief This function maps the location in
+     * 360 degrees, and fills the detected points in.
+     * This method uses the servo motor controller to set
+     * specified angles of the lidar sensor. This will be
+     * delivered by the module motor controller.
      *
-     * This function sets the given relative point as
-     * impassable.
-     *
-     * @param [in] angle: The angle in which in the direction
-     * of the to bet set point. Angle 0 is pointing downwards, and
-     * grows counterclockwise.
-     *
-     *  @param [in] distance: The distance of the point to the
-     *
-     * NOTE: This value is given in cm, not in grid points!
+     * The driver to the lidar sensor that allows us to
+     * read the measured distance, will be developed by
+     * the team that is responsible for distance measurement.
      */
-    void setRelativePointAsImpassable(Angle angle, double distance) {
-        ///< The compiler does not beleive that the sin() and cos ()functions exists, so this gives an error.
-        ///< However, if we do something like auto a = sin(distance), then it works
-        ///< perfectly fine. This should be fixed somehow.
-
-        // setRelativePointAsImpassable(Vector2D(round(sin(angle.asRadian()) * distance), round(cos(angle.asRadian()) * distance)));
+    void mapLocation() {
+        ///< The servo motor will be called here. Waitnig for team motor controller
+        for (int i = 0; i < 360; ++i) {
+            ///< servo.write(i)
+            ///< auto measuredDistance = lidar.read();
+            ///< if (measuredDistance < MAX_VALUE_OF_SENSOR){
+            ///<    setRelativePointasImpassable(Angle(AngleType::DEG, i + sensorAngle.asRadian()), measuredDistance)
+            ///<}
+        }
     }
 
     /**

@@ -11,16 +11,47 @@ Mapping::Angle::Angle(Mapping::AngleType type, double value) {
 
 void Mapping::Angle::set(Mapping::AngleType type, double value) {
     if (type == Mapping::AngleType::DEG) {
-        angleInDeg = value - int(value / 360) * 360;
+        if (value < 0) {
+            value -= (int(value / 360) * 360);
+            angleInDeg = 360 + value;
+        } else {
+            angleInDeg = value - int(value / 360) * 360;
+        }
     } else if (type == Mapping::AngleType::RAD) {
-        angleInDeg = (value - int(value / (2 * pi)) * 2 * pi) * (180 / pi);
+        if (value < 0) {
+            value -= (int(value / ((2 * pi))) * (2 * pi));
+            value = 2 * pi + value;
+            angleInDeg = value * (180 / pi);
+        } else {
+            angleInDeg = (value - int(value / (2 * pi)) * 2 * pi) * (180 / pi);
+        }
     }
 }
 
-double Mapping::Angle::asDegree() {
+double Mapping::Angle::asDegree() const {
     return angleInDeg;
 }
 
-double Mapping::Angle::asRadian() {
+double Mapping::Angle::asRadian() const {
     return angleInDeg / (180 / pi);
+}
+
+Mapping::Angle &Mapping::Angle::operator+=(const Angle &other) {
+    angleInDeg += other.angleInDeg;
+    angleInDeg = angleInDeg - int(angleInDeg / 360) * 360;
+    return *this;
+}
+
+Mapping::Angle Mapping::Angle::operator+(const Mapping::Angle &other) {
+    return Mapping::Angle(AngleType::DEG, angleInDeg + other.angleInDeg);
+}
+
+Mapping::Angle &Mapping::Angle::operator-=(const Angle &other) {
+    angleInDeg -= other.angleInDeg;
+    angleInDeg = angleInDeg - int(angleInDeg / 360) * 360;
+    return *this;
+}
+
+Mapping::Angle Mapping::Angle::operator-(const Mapping::Angle &other) {
+    return Mapping::Angle(AngleType::DEG, angleInDeg - other.angleInDeg);
 }

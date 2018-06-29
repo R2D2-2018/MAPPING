@@ -68,7 +68,7 @@ class Angle {
      * @return [double] - The stored angle as degree.
      * The value will be between 0 - 360.
      */
-    double asDegree();
+    double asDegree() const;
 
     /**
      * @brief Returns the stored angle as radian.
@@ -77,7 +77,35 @@ class Angle {
      * @return [double] - The stored angle as radian.
      * The value will be between 0 - 2pi.
      */
-    double asRadian();
+    double asRadian() const;
+
+    /**
+     *
+     * @brief += operator for angle.
+     *
+     */
+    Angle &operator+=(const Angle &other);
+
+    /**
+     *
+     * @brief + operator for angle.
+     *
+     */
+    Angle operator+(const Angle &other);
+
+    /**
+     *
+     * @brief -= operator for angle.
+     *
+     */
+    Angle &operator-=(const Angle &other);
+
+    /**
+     *
+     * @brief - operator for angle.
+     *
+     */
+    Angle operator-(const Angle &other);
 };
 } // namespace Mapping
 
